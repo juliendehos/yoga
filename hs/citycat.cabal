@@ -12,7 +12,11 @@ common deps
 library
     import:             deps
     hs-source-dirs:     src
-    exposed-modules:    Citycat
+    exposed-modules:    Bot
+                        Bot.Random
+                        Game
+                        Game.Citycat
+                        Game.Find5
 
 executable citycat-cli
     import:             deps

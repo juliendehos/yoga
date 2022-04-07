@@ -1,0 +1,2 @@
+module Bot.Random where
+
