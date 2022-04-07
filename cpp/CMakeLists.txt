@@ -4,7 +4,7 @@ set( CMAKE_CXX_STANDARD 20 )
 
 find_package(Torch REQUIRED)
 include_directories( ${TORCH_INCLUDE} )
-# set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} ${TORCH_CXX_FLAGS}")
+
 # find_package( Threads REQUIRED )
 
 add_library( citycat SHARED
