@@ -1,8 +1,8 @@
 name: "citycat actions"
 
 on:
-  pull_request:
   push:
+    branches: 'main'
 
 jobs:
   build-and-run:
