@@ -1,4 +1,5 @@
 {-# Language MultiParamTypeClasses #-}
+{-# Language StrictData #-}
 
 module Game.Find5 where
 
