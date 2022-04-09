@@ -1,5 +1,5 @@
 cabal-version:      2.2
-name:               citycat
+name:               yoga
 version:            1.0
 build-type:         Simple
 license:            MIT
@@ -12,16 +12,16 @@ common deps
 library
     import:             deps
     hs-source-dirs:     src
-    exposed-modules:    Bot
-                        Bot.Random
-                        Game
-                        Game.Citycat
-                        Game.Find5
+    exposed-modules:    Agent
+                        Agent.Random
+                        Env
+                        Env.Citycat
+                        Env.Find5
 
 executable citycat-cli
     import:             deps
     hs-source-dirs:     app
-    main-is:            citycat-cli.hs
-    build-depends:      citycat
+    main-is:            cli.hs
+    build-depends:      yoga
 
 

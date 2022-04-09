@@ -1,6 +1,9 @@
 
 *alpha-experimental-early stage*
 
+<https://juliendehos.github.io/yoga>
+
+
 # cpp
 
 ## build
@@ -24,5 +27,11 @@ cmake --build build
 nix-shell
 cabal build
 ```
+
+# references
+
+<https://gym.openai.com>
+
+<https://github.com/openai/gym>
 
 

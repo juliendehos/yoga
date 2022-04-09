@@ -22,7 +22,7 @@ let
 
   pkgs = import channel { inherit config; };
 
-  drv = pkgs.haskellPackages.callCabal2nix "citycat" ./. {};
+  drv = pkgs.haskellPackages.callCabal2nix "yoga" ./. {};
 
 in
 

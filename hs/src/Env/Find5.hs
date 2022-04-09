@@ -1,11 +1,11 @@
 {-# Language MultiParamTypeClasses #-}
 {-# Language StrictData #-}
 
-module Game.Find5 where
+module Env.Find5 where
 
 import qualified Data.Vector as V
 
-import Game
+import Env
 
 data Status = Play | Win | Lose
   deriving (Eq, Show)
@@ -26,7 +26,7 @@ mkFind5 = Find5
   (Action <$> V.fromList [1..10]) 
   Play 
 
-instance Game Find5 Action Status Observation where
+instance Env Find5 Action Status Observation where
 
   isRunning g = _status g == Play
 

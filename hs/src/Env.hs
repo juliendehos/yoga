@@ -1,10 +1,10 @@
 {-# Language FunctionalDependencies #-}
 
-module Game where
+module Env where
 
 import qualified Data.Vector as V
 
-class Game g a s o | g -> a s o where
+class Env g a s o | g -> a s o where
   isRunning :: g a s o -> Bool
   isTerminated :: g a s o -> Bool
   getStatus :: g a s o -> s
