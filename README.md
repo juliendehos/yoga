@@ -3,7 +3,6 @@
 
 <https://juliendehos.github.io/yoga>
 
-
 # cpp
 
 ## build
@@ -16,7 +15,7 @@ cmake --build build
 
 ## todo
 
-- C++20 modules ?
+  - C++20 modules ?
 
 
 # haskell
@@ -34,4 +33,20 @@ cabal build
 
 <https://github.com/openai/gym>
 
+
+```py
+import gym
+
+env = gym.make("CartPole-v1")
+observation, info = env.reset(seed=42, return_info=True)
+
+for _ in range(1000):
+    action = env.action_space.sample()
+    observation, reward, done, info = env.step(action)
+
+    if done:
+        observation, info = env.reset(return_info=True)
+
+env.close()
+```
 
