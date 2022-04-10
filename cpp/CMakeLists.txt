@@ -1,19 +1,15 @@
 cmake_minimum_required( VERSION 3.11 )
-project( citycat  LANGUAGES CXX )
+project( yoga  LANGUAGES CXX )
 set( CMAKE_CXX_STANDARD 20 )
 
-find_package(Torch REQUIRED)
+find_package( Torch REQUIRED )
 include_directories( ${TORCH_INCLUDE} )
 
 # find_package( Threads REQUIRED )
+# add_library( yoga SHARED src/Citycat.cpp)
 
-add_library( citycat SHARED
-  src/Random.cpp
-  src/Citycat.cpp)
-target_link_libraries( citycat ${TORCH_LIBRARIES} )
+add_executable( yoga-cli.out app/yoga-cli.cpp )
+target_link_libraries( yoga-cli.out  ${TORCH_LIBRARIES} )
 
-add_executable( citycat-cli.out app/citycat-cli.cpp )
-target_link_libraries( citycat-cli.out citycat )
-
-install( TARGETS citycat-cli.out DESTINATION bin )
+install( TARGETS yoga-cli.out DESTINATION bin )
 
