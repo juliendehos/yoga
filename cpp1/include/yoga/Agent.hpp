@@ -4,6 +4,7 @@
 
 class Agent {
   public:
-    virtual EnvCitycat::Action decide(const EnvCitycat & env) = 0;
+    virtual void learn(const EnvCitycat & env) = 0;
+    virtual EnvCitycat::Action genmvove(const EnvCitycat & env) = 0;
 };
 
