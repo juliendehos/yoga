@@ -87,8 +87,8 @@ class CustomDataset : public torch::data::datasets::Dataset<CustomDataset> {
 int main() {
 
     // generate input data (noisy sinc)
-    Random xRng;
-    Random noiseRng;
+    Random xRng({});
+    Random noiseRng({});
     DataVec trainVec(trainSize);
     for (auto & xy : trainVec) {
         const float x = xRng.uniformDouble(-40, 40);

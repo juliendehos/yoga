@@ -4,8 +4,12 @@
 
 class AgentFirst : public Agent {
   public:
-    EnvCitycat::Action decide(const EnvCitycat & env) override {
+
+    void learn(const EnvCitycat & env) {}
+
+    EnvCitycat::Action genmove(const EnvCitycat & env) override {
       return env.actions().front();
     }
+
 };
 

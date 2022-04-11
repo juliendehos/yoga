@@ -1,5 +1,6 @@
 #pragma once
 
+#include <optional>
 #include <random>
 
 class Random {
@@ -7,14 +8,12 @@ class Random {
     std::mt19937 _engine;
 
   public:
-    // Random() = default;
-    Random() : _engine(std::random_device{}()) {}
+    Random(std::optional<uint64_t> s) : _engine(std::random_device{}()) {
+      if (s)
+        _engine.seed(*s);
+    }
 
     Random(const Random &) = delete;
-
-    void seed(uint64_t s) {
-      _engine.seed(s);
-    }
 
     int uniformInt(int a, int b) {
       std::uniform_int_distribution<int> dist(a, b);
