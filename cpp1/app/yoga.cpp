@@ -8,18 +8,27 @@
 int main() {
   using namespace std::chrono_literals;
 
-  const int nbSteps = 10;
   EnvCitycatConsole env(20, 30, 30, std::make_optional(42));
   AgentRandom agent({});
   // AgentFirst agent;
 
-  for (int i=0; i<nbSteps; i++) {
-    std::this_thread::sleep_for(1s);
-    auto action = agent.genmove(env);
-    env.step(action);
-    env.render(std::cout);
-    if (env.done())
-      env.reset();
+  const int nSims = 10;
+
+  for (int iSims=0; iSims<nSims; iSims++) {
+    int iSteps = 0;
+
+    do {
+      std::this_thread::sleep_for(200ms);
+      auto action = agent.genmove(env);
+      env.step(action);
+      iSteps++;
+
+      std::cout << "iSims: " << iSims << std::endl;
+      std::cout << "iSteps: " << iSteps << std::endl;
+      env.render(std::cout);
+    } while (not env.done());
+
+    env.reset();
   }
 
   return 0;
