@@ -26,8 +26,7 @@ class Random {
       return dist(_engine);
     }
 
-    double normalDouble(double m, double s)
-    {
+    double normalDouble(double m, double s) {
       std::normal_distribution<double> dist(m, s);
       return dist(_engine);
     }
