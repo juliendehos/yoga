@@ -1,6 +1,6 @@
 #include <yoga/Agent/AgentFirst.hpp>
 #include <yoga/Agent/AgentRandom.hpp>
-#include <yoga/Env/EnvCitycat.hpp>
+#include <yoga/Env/EnvCitycatConsole.hpp>
 
 #include <chrono>
 #include <thread>
@@ -26,6 +26,7 @@ int main() {
       std::cout << "iSims: " << iSims << std::endl;
       std::cout << "iSteps: " << iSteps << std::endl;
       env.render(std::cout);
+
     } while (not env.done());
 
     env.reset();

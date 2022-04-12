@@ -3,13 +3,17 @@ let
   pkgs = import <nixpkgs> { inherit config; };
 
 in with pkgs; stdenv.mkDerivation {
-  name = "citycat";
+  name = "yoga";
   src = ./.;
 
   buildInputs = [
     cmake
     libtorch-bin
     mkl
+    pkgconfig
+    SDL2
+    SDL2_gfx
+    SDL2_ttf
   ];
 
 }
