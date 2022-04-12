@@ -3,6 +3,8 @@
 #include "../RenderConsole.hpp"
 #include "EnvCitycat.hpp"
 
+#include <map>
+
 std::map<EnvCitycat::Cell, char> fmtCell = {
   {EnvCitycat::Cell::Empty, '.'},
   {EnvCitycat::Cell::Cat, 'C'},
@@ -43,6 +45,9 @@ class EnvCitycatConsole : public EnvCitycat, public RenderConsole {
 
       os << "observations:" << std::endl;
       auto o = observations();
+      os << "  - cat: " 
+        << o._i << "," << o._j << " " 
+        << o._di << "," << o._dj << std::endl;
       os << "  - left: " << fmtCell[o._left] << std::endl;
       os << "  - front: ";
       for (auto c : o._front)
