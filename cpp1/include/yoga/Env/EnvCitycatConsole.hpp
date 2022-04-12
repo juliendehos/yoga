@@ -31,6 +31,10 @@ class EnvCitycatConsole : public EnvCitycat, public RenderConsole {
       }
       os << "score: " << score() << std::endl;
       os << "done: " << done() << std::endl;
+      os << "lastAction: ";
+      auto la = lastAction();
+      if (la) 
+        os << fmtAction[*la] << std::endl;
 
       os << "actions:";
       for (auto a : actions())

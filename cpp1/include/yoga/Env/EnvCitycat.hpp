@@ -7,8 +7,6 @@
 #include <map>
 #include <vector>
 
-// TODO test
-
 class EnvCitycat {
   public:
     enum class Action {Left, Right, Straight};
@@ -34,6 +32,7 @@ class EnvCitycat {
     bool _done;
     std::vector<Action> _actions;
     Observations _observations;
+    std::optional<Action> _lastAction;
 
     int _catI;
     int _catJ;
@@ -67,6 +66,7 @@ class EnvCitycat {
       _vitality = _startingVitality;
       _score = 0;
       _done = false;
+      _lastAction.reset();
 
       _catI = _ni/2 + _random.uniformInt(-2, 2);
       _catJ = _nj/2 + _random.uniformInt(-2, 2);
@@ -107,6 +107,7 @@ class EnvCitycat {
     void step(const Action & action) {
       _vitality -= 1;
       _score += 1;
+      _lastAction = std::make_optional(action);
 
       int di, dj;
       if (action == Action::Left) {
@@ -164,6 +165,10 @@ class EnvCitycat {
 
     double score() const {
       return _score;
+    }
+
+    std::optional<Action> lastAction() const {
+      return _lastAction;
     }
 
     const Observations & observations() const {
