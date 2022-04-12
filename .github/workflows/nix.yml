@@ -14,11 +14,11 @@ jobs:
         with:
           nix_path: nixpkgs=channel:nixos-21.11
 
-      - name: build cpp
-        working-directory: ./cpp
+      - name: build cpp1
+        working-directory: ./cpp1
         run: nix-build
 
-      - name: build hs
-        working-directory: ./hs
+      - name: build hs1
+        working-directory: ./hs1
         run: nix-build
 
