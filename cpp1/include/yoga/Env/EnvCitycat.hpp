@@ -69,8 +69,13 @@ class EnvCitycat {
       auto [diRight, djRight] = actionToDij(Action::Right);
       _observations._right = board(_catI+diRight, _catJ+djRight);
 
-      // TODO
-      _observations._front = {Cell::Empty, Cell::Wall};
+      _observations._front.clear();
+      for (int k=1; k<=3; k++) {
+        auto c = board(_catI + k*_catDi, _catJ + k*_catDj);
+        _observations._front.push_back(c);
+        if (c == Cell::Wall)
+          break;
+      }
 
       _observations._i = _catI;
       _observations._j = _catJ;
