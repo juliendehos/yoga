@@ -9,7 +9,7 @@
 
 class EnvCitycat {
   public:
-    enum class Action {Left, Right, Straight};
+    enum class Action {Left, Right, Front};
 
     enum class Cell {Empty, Cat, Dog, Food, Wall} ;
 
@@ -98,7 +98,7 @@ class EnvCitycat {
       _startingVitality(startingVitality),
       _board(_ni*_nj),
       _random(s),
-      _actions({Action::Left, Action::Right, Action::Straight})
+      _actions({Action::Left, Action::Right, Action::Front})
     {
       _observations._front.reserve(3);
       reset();

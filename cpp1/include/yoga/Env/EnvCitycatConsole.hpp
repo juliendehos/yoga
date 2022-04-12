@@ -14,7 +14,7 @@ std::map<EnvCitycat::Cell, char> fmtCell = {
 std::map<EnvCitycat::Action, std::string> fmtAction = {
   {EnvCitycat::Action::Left, "left"},
   {EnvCitycat::Action::Right, "right"},
-  {EnvCitycat::Action::Straight, "straight"}
+  {EnvCitycat::Action::Front, "front"}
 };
 
 class EnvCitycatConsole : public EnvCitycat, public RenderConsole {
