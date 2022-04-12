@@ -13,7 +13,6 @@ library
     import:             deps
     hs-source-dirs:     src
     exposed-modules:    Agent
-                        Agent.First
                         Agent.Random
                         Env
                         Env.Citycat
