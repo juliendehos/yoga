@@ -1,29 +1,22 @@
 #pragma once
 
-#include "../Utils/Random.hpp"
+#include "../Env.hpp"
+#include "../Random.hpp"
 
 #include <algorithm>
+#include <array>
 #include <cassert>
 #include <deque>
 #include <vector>
 
-class EnvCitycat {
+class EnvCitycat : public Env {
   public:
-    enum class Action {Left, Right, Front};
+    enum class Move {Left, Front, Right};
 
     enum class Cell {Empty, Cat, Dog, Food, Wall} ;
 
-    struct Observations {
-      Cell _left;
-      Cell _right;
-      std::vector<Cell> _front;
-      int _i;
-      int _j;
-      int _di;
-      int _dj;
-    };
-
     using ItemDeque = std::deque<std::pair<int, int>>;
+    // using ItemDeque = std::deque<Eigen::Vector2i>;
 
   protected:
     const int _ni;
@@ -31,30 +24,38 @@ class EnvCitycat {
     const int _startingVitality;
     const unsigned _itemCapacity;
 
-  private:
     std::vector<Cell> _board;
     Random _random;
-    double _score;
-    bool _done;
-    std::vector<Action> _actions;
-    Observations _observations;
-    std::optional<Action> _lastAction;
+    std::optional<Move> _lastMove;
 
+    // TODO
+    Eigen::Vector2i _catPij;
+    Eigen::Vector2i _catDij;
     int _catI;
     int _catJ;
     int _catDi;
     int _catDj;
+
     int _vitality;
     ItemDeque _foods;
     ItemDeque _dogs;
 
   private:
 
-    std::pair<int, int> actionToDij(Action action) const {
-      switch(action) {
-        case Action::Left: 
+    Move actionToMove(const Point & action) {
+      assert(action._discrete.size() == 1);
+      int v = action._discrete(0);
+      if (v==0) return Move::Left;
+      if (v==1) return Move::Front;
+      if (v==2) return Move::Right;
+      assert(false);
+    }
+
+    std::pair<int, int> moveToDij(Move move) const {
+      switch(move) {
+        case Move::Left: 
           return { -_catDj, _catDi };
-        case Action::Right: 
+        case Move::Right: 
           return { _catDj, -_catDi };
         default: 
           return { _catDi, _catDj };
@@ -63,6 +64,8 @@ class EnvCitycat {
 
     void updateObservations() {
 
+      // TODO
+      /*
       auto [diLeft, djLeft] = actionToDij(Action::Left);
       _observations._left = board(_catI+diLeft, _catJ+djLeft);
 
@@ -76,11 +79,8 @@ class EnvCitycat {
         if (c == Cell::Wall)
           break;
       }
+      */
 
-      _observations._i = _catI;
-      _observations._j = _catJ;
-      _observations._di = _catDi;
-      _observations._dj = _catDj;
     }
 
     Cell & board(int i, int j) {
@@ -117,11 +117,11 @@ class EnvCitycat {
     }
 
   public:
-    void reset() {
+    void reset() override {
       _vitality = _startingVitality;
       _score = 0;
       _done = false;
-      _lastAction.reset();
+      _lastMove.reset();
 
       _catI = _ni/2 + _random.uniformInt(-2, 2);
       _catJ = _nj/2 + _random.uniformInt(-2, 2);
@@ -156,21 +156,22 @@ class EnvCitycat {
       _startingVitality(startingVitality),
       _itemCapacity((_ni+_nj)/2),
       _board(_ni*_nj),
-      _random(s),
-      _actions({Action::Left, Action::Right, Action::Front})
+      _random(s)
+      // TODO _actions({Action::Left, Action::Right, Action::Front})
     {
-      _observations._front.reserve(3);
       reset();
     }
 
-    void step(const Action & action) {
+    void step(const Point & action) {
       assert(not _done);
+
+      Move move = actionToMove(action);
 
       _vitality -= 1;
       _score += 1;
-      _lastAction = std::make_optional(action);
+      _lastMove = std::make_optional(move);
 
-      auto [di, dj] = actionToDij(action);
+      auto [di, dj] = moveToDij(move);
 
       int i = _catI + di;
       int j = _catJ + dj;
@@ -211,26 +212,6 @@ class EnvCitycat {
       }
 
       updateObservations();
-    }
-
-    bool done() const {
-      return _done;
-    }
-
-    double score() const {
-      return _score;
-    }
-
-    std::optional<Action> lastAction() const {
-      return _lastAction;
-    }
-
-    const Observations & observations() const {
-      return _observations;
-    }
-
-    const std::vector<Action> & actions() const {
-      return _actions;
     }
 
 };

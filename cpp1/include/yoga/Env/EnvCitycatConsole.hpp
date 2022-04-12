@@ -13,10 +13,10 @@ std::map<EnvCitycat::Cell, char> fmtCell = {
   {EnvCitycat::Cell::Wall, '#'}
 };
 
-std::map<EnvCitycat::Action, std::string> fmtAction = {
-  {EnvCitycat::Action::Left, "left"},
-  {EnvCitycat::Action::Right, "right"},
-  {EnvCitycat::Action::Front, "front"}
+std::map<EnvCitycat::Move, std::string> fmtAction = {
+  {EnvCitycat::Move::Left, "left"},
+  {EnvCitycat::Move::Right, "right"},
+  {EnvCitycat::Move::Front, "front"}
 };
 
 class EnvCitycatConsole : public EnvCitycat, public RenderConsole {
@@ -31,20 +31,20 @@ class EnvCitycatConsole : public EnvCitycat, public RenderConsole {
         }
         os << std::endl;
       }
-      os << "score: " << score() << std::endl;
-      os << "done: " << done() << std::endl;
+      os << "score: " << _score << std::endl;
+      os << "done: " << _done << std::endl;
       os << "lastAction: ";
-      auto la = lastAction();
-      if (la) 
-        os << fmtAction[*la] << std::endl;
+      if (_lastMove) 
+        os << fmtAction[*_lastMove] << std::endl;
 
+      /*
       os << "actions:";
-      for (auto a : actions())
+      for (auto & a : _actions)
         os << " " << fmtAction[a];
       os << std::endl;
 
       os << "observations:" << std::endl;
-      auto o = observations();
+      auto o = _observations;
       os << "  - cat: " 
         << o._i << "," << o._j << " " 
         << o._di << "," << o._dj << std::endl;
@@ -54,6 +54,7 @@ class EnvCitycatConsole : public EnvCitycat, public RenderConsole {
         os << fmtCell[c];
       os << std::endl;
       os << "  - right: " << fmtCell[o._right] << std::endl;
+      */
 
       os << std::endl;
     }

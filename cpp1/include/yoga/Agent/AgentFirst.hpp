@@ -4,11 +4,16 @@
 
 class AgentFirst : public Agent {
   public:
+    AgentFirst(const Space & observationSpace, const Space & actionSpace) :
+      Agent(observationSpace, actionSpace) 
+    {}
 
-    void learn(const EnvCitycat & env) {}
+    void learn(const Env & env) {
+    }
 
-    EnvCitycat::Action genmove(const EnvCitycat & env) override {
-      return env.actions().front();
+    Point genAction(const Point & observations) {
+      return {};
+      // return actions._discreteMin;
     }
 
 };

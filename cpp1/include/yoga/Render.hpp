@@ -1,7 +1,7 @@
 #pragma once
 
 // TODO
-class RenderSdl {
+class Render {
   public:
     virtual void render() const = 0;
 };

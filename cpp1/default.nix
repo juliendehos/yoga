@@ -8,6 +8,7 @@ in with pkgs; stdenv.mkDerivation {
 
   buildInputs = [
     cmake
+    eigen
     libtorch-bin
     mkl
     pkgconfig

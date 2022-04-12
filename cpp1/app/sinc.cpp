@@ -1,4 +1,4 @@
-#include <yoga/Utils/Random.hpp>
+#include <yoga/Random.hpp>
 
 #include <iostream>
 #include <torch/torch.h>

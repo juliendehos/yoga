@@ -1,10 +1,21 @@
 #pragma once
 
-#include "Env/EnvCitycat.hpp"
+#include "Env.hpp"
 
 class Agent {
+  protected:
+    const Space _observationSpace;
+    const Space _actionSpace;
+
   public:
-    virtual void learn(const EnvCitycat & env) = 0;
-    virtual EnvCitycat::Action genmove(const EnvCitycat & env) = 0;
+    Agent(const Space & observationSpace, const Space & actionSpace) :
+      _observationSpace(observationSpace),
+      _actionSpace(actionSpace)
+    {}
+
+    virtual void learn(const Env & env) = 0;
+
+    virtual Point genAction(const Point & observationPoint) = 0;
+
 };
 

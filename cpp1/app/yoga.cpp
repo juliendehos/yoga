@@ -9,8 +9,8 @@ int main() {
   using namespace std::chrono_literals;
 
   EnvCitycatConsole env(20, 30, 30, std::make_optional(42));
-  AgentRandom agent({});
-  // AgentFirst agent;
+  // AgentRandom agent({});
+  AgentFirst agent(env.observationSpace(), env.actionSpace());
 
   const int nSims = 10;
 
@@ -19,7 +19,7 @@ int main() {
 
     do {
       std::this_thread::sleep_for(200ms);
-      auto action = agent.genmove(env);
+      auto action = agent.genAction(env.observationPoint());
       env.step(action);
       iSteps++;
 
