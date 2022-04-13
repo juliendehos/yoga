@@ -36,6 +36,8 @@ class EnvCitycatConsole : public EnvCitycat, public RenderConsole {
       os << "lastMove: ";
       if (_lastMove) 
         os << fmtMove[*_lastMove] << std::endl;
+      os << "position: " << _catI << " " << _catJ << std::endl;
+      os << "direction: " << _catDi << " " << _catDj << std::endl;
 
       os << "actionSpace:\n";
       printSpace(std::cout, _actionSpace);

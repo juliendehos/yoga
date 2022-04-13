@@ -15,10 +15,10 @@ class AgentRandom : public Agent {
       _random(s)
     {}
 
-    void learn(const Env & env) {
+    void learn(const Env & env) override {
     }
 
-    Point genAction(const Point & observations) {
+    Point genAction(const Point & observations) override {
       int nd = _actionSpace.nd();
       int nb = _actionSpace.nb();
       Point action(nd, nb);

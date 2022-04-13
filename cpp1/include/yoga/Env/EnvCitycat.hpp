@@ -82,11 +82,11 @@ class EnvCitycat : public Env {
       auto [diRight, djRight] = moveToDij(Move::Right);
       discrete[1] = cellToInt(board(_catI+diRight, _catJ+djRight));
 
-      for (int k=2; k<=4; k++) {
+      for (int k=1; k<=3; k++) {
         auto c = board(_catI + k*_catDi, _catJ + k*_catDj);
-        discrete[k] = cellToInt(c);
         if (c == Cell::Wall)
           break;
+        discrete[1+k] = cellToInt(c);
       }
 
       _observationPoint._box[0] = _vitality;
@@ -161,7 +161,7 @@ class EnvCitycat : public Env {
     }
 
     EnvCitycat(int ni, int nj, double startingVitality, std::optional<uint64_t> s) :
-      Env({{0}, {2}, {}, {}}, {{0,0,0,0,0}, {2,2,2,2,2}, {0}, {MAX_VITALITY}}),
+      Env({{0}, {2}, {}, {}}, {{0,0,0,0,0}, {4,4,4,4,4}, {0}, {MAX_VITALITY}}),
       _ni(ni+2), 
       _nj(nj+2), 
       _startingVitality(std::min(startingVitality, MAX_VITALITY)),
@@ -192,7 +192,6 @@ class EnvCitycat : public Env {
       if (c == Cell::Dog) {
         _score -= 5;
         _done = true;
-        updateObservations();
         return;
       }
 
@@ -203,6 +202,9 @@ class EnvCitycat : public Env {
         _foods.erase(it);
       }
 
+      _catDi = di;
+      _catDj = dj;
+
       if (c == Cell::Wall) {
         _score -= 2;
       }
@@ -211,18 +213,15 @@ class EnvCitycat : public Env {
         board(i, j) = Cell::Cat;
         _catI = i;
         _catJ = j;
-        _catDi = di;
-        _catDj = dj;
       }
 
-      if (_score => MAX_SCORE or _vitality <= 0) {
+      if (_score >= MAX_SCORE or _vitality <= 0) {
         _done = true;
-      }
-      else {
-        addItem(_foods, Cell::Food);
-        addItem(_dogs, Cell::Dog);
+        return;
       }
 
+      addItem(_foods, Cell::Food);
+      addItem(_dogs, Cell::Dog);
       updateObservations();
     }
 
