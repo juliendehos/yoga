@@ -1,32 +1,56 @@
 #pragma once
 
-#include <Eigen/Dense>
-
 #include <memory>
 #include <vector>
 
 struct Point {
-  Eigen::VectorXi _discrete;
-  Eigen::VectorXf _box;
+  std::vector<int> _discrete;
+  std::vector<double> _box;
+
+  Point(const std::vector<int> & d, const std::vector<double> & b) :
+    _discrete(d),
+    _box(b)
+  {}
+
+  Point(int nd, int nb) {
+    _discrete.resize(nd);
+    _box.resize(nb);
+  }
+
 };
 
 struct Space {
-  Eigen::VectorXi _discreteMin;
-  Eigen::VectorXi _discreteMax;
-  Eigen::VectorXf _boxMin;
-  Eigen::VectorXf _boxMax;
+  std::vector<int> _discreteMin;
+  std::vector<int> _discreteMax;
+  std::vector<double> _boxMin;
+  std::vector<double> _boxMax;
+
+  int nd() const {
+    return _discreteMin.size();
+  }
+
+  int nb() const {
+    return _boxMin.size();
+  }
+
 };
 
 class Env {
 
   protected:
-    bool _done;
-    double _score;
-    Space _actionSpace;
+    const Space _actionSpace;
+    const Space _observationSpace;
     Point _observationPoint;
-    Space _observationSpace;
+    double _score;
+    bool _done;
 
   public:
+    Env(const Space & actionSpace, const Space & observationSpace) :
+      _actionSpace(actionSpace),
+      _observationSpace(observationSpace),
+      _observationPoint(_observationSpace.nd(), _observationSpace.nb())
+    {}
+
     virtual void reset() = 0;
 
     virtual void step(const Point & action) = 0;

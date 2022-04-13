@@ -1,6 +1,6 @@
 #include <yoga/Agent/AgentFirst.hpp>
 #include <yoga/Agent/AgentRandom.hpp>
-#include <yoga/Env/EnvCitycatConsole.hpp>
+#include <yoga/Env/EnvCitycatSdl.hpp>
 
 #include <chrono>
 #include <thread>
@@ -8,9 +8,9 @@
 int main() {
   using namespace std::chrono_literals;
 
-  EnvCitycatConsole env(20, 30, 30, std::make_optional(42));
-  // AgentRandom agent({});
-  AgentFirst agent(env.observationSpace(), env.actionSpace());
+  EnvCitycatSdl env(20, 30, 30, std::make_optional(42));
+  AgentRandom agent(env.observationSpace(), env.actionSpace(), {});
+  // AgentFirst agent(env.observationSpace(), env.actionSpace());
 
   const int nSims = 10;
 
@@ -25,7 +25,9 @@ int main() {
 
       std::cout << "iSims: " << iSims << std::endl;
       std::cout << "iSteps: " << iSteps << std::endl;
-      env.render(std::cout);
+
+      // TODO
+      // env.render(std::cout);
 
     } while (not env.done());
 

@@ -12,8 +12,7 @@ class AgentFirst : public Agent {
     }
 
     Point genAction(const Point & observations) {
-      return {};
-      // return actions._discreteMin;
+      return {_actionSpace._discreteMin, _actionSpace._boxMin};
     }
 
 };

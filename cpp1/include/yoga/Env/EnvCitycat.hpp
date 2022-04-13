@@ -1,13 +1,12 @@
 #pragma once
 
-#include "../Env.hpp"
-#include "../Random.hpp"
-
 #include <algorithm>
-#include <array>
 #include <cassert>
 #include <deque>
 #include <vector>
+
+#include "../Env.hpp"
+#include "../Random.hpp"
 
 class EnvCitycat : public Env {
   public:
@@ -16,39 +15,47 @@ class EnvCitycat : public Env {
     enum class Cell {Empty, Cat, Dog, Food, Wall} ;
 
     using ItemDeque = std::deque<std::pair<int, int>>;
-    // using ItemDeque = std::deque<Eigen::Vector2i>;
+
+    const double MAX_VITALITY = 1000; 
 
   protected:
     const int _ni;
     const int _nj;
-    const int _startingVitality;
+    const double _startingVitality;
     const unsigned _itemCapacity;
 
     std::vector<Cell> _board;
     Random _random;
     std::optional<Move> _lastMove;
 
-    // TODO
-    Eigen::Vector2i _catPij;
-    Eigen::Vector2i _catDij;
     int _catI;
     int _catJ;
     int _catDi;
     int _catDj;
 
-    int _vitality;
+    double _vitality;
     ItemDeque _foods;
     ItemDeque _dogs;
 
   private:
 
-    Move actionToMove(const Point & action) {
+    Move actionToMove(const Point & action) const {
       assert(action._discrete.size() == 1);
-      int v = action._discrete(0);
+      int v = action._discrete[0];
       if (v==0) return Move::Left;
       if (v==1) return Move::Front;
       if (v==2) return Move::Right;
       assert(false);
+    }
+
+    int cellToInt(EnvCitycat::Cell c) const {
+      switch(c) {
+        case Cell::Cat:   return 1;
+        case Cell::Dog:   return 2;
+        case Cell::Food:  return 3;
+        case Cell::Wall:  return 4;
+        default:          return 0;
+      }
     }
 
     std::pair<int, int> moveToDij(Move move) const {
@@ -64,11 +71,11 @@ class EnvCitycat : public Env {
 
     void updateObservations() {
 
+      auto [diLeft, djLeft] = moveToDij(Move::Left);
+      _observationPoint._discrete[0] = cellToInt(board(_catI+diLeft, _catJ+djLeft));
+
       // TODO
       /*
-      auto [diLeft, djLeft] = actionToDij(Action::Left);
-      _observations._left = board(_catI+diLeft, _catJ+djLeft);
-
       auto [diRight, djRight] = actionToDij(Action::Right);
       _observations._right = board(_catI+diRight, _catJ+djRight);
 
@@ -150,15 +157,17 @@ class EnvCitycat : public Env {
       updateObservations();
     }
 
-    EnvCitycat(int ni, int nj, int startingVitality, std::optional<uint64_t> s) :
+    EnvCitycat(int ni, int nj, double startingVitality, std::optional<uint64_t> s) :
+      Env({{0}, {2}, {}, {}}, {{0,0,0,0,0}, {2,2,2,2,2}, {0}, {MAX_VITALITY}}),
       _ni(ni+2), 
       _nj(nj+2), 
-      _startingVitality(startingVitality),
+      _startingVitality(std::min(startingVitality, MAX_VITALITY)),
       _itemCapacity((_ni+_nj)/2),
       _board(_ni*_nj),
       _random(s)
-      // TODO _actions({Action::Left, Action::Right, Action::Front})
     {
+      _observationPoint._discrete.reserve(5);
+      _observationPoint._box.reserve(1);
       reset();
     }
 
@@ -186,7 +195,7 @@ class EnvCitycat : public Env {
 
       if (c == Cell::Food) {
         _score += 10;
-        _vitality += 5;
+        _vitality = std::min(_vitality+5, MAX_VITALITY);
         auto it = std::find(_foods.begin(), _foods.end(), std::make_pair(i, j));
         _foods.erase(it);
       }
@@ -203,7 +212,7 @@ class EnvCitycat : public Env {
         _catDj = dj;
       }
 
-      if (_score > 100) {
+      if (_score > 100 or _vitality <= 0) {
         _done = true;
       }
       else {

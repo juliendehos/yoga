@@ -1,9 +1,9 @@
 #pragma once
 
+#include <map>
+
 #include "../RenderConsole.hpp"
 #include "EnvCitycat.hpp"
-
-#include <map>
 
 std::map<EnvCitycat::Cell, char> fmtCell = {
   {EnvCitycat::Cell::Empty, '.'},
@@ -13,7 +13,7 @@ std::map<EnvCitycat::Cell, char> fmtCell = {
   {EnvCitycat::Cell::Wall, '#'}
 };
 
-std::map<EnvCitycat::Move, std::string> fmtAction = {
+std::map<EnvCitycat::Move, std::string> fmtMove = {
   {EnvCitycat::Move::Left, "left"},
   {EnvCitycat::Move::Right, "right"},
   {EnvCitycat::Move::Front, "front"}
@@ -21,7 +21,7 @@ std::map<EnvCitycat::Move, std::string> fmtAction = {
 
 class EnvCitycatConsole : public EnvCitycat, public RenderConsole {
   public:
-    EnvCitycatConsole(int ni, int nj, int startingVitality, std::optional<uint64_t> s) :
+    EnvCitycatConsole(int ni, int nj, double startingVitality, std::optional<uint64_t> s) :
       EnvCitycat(ni, nj, startingVitality, s) {}
 
     void render(std::ostream & os) const override {
@@ -33,14 +33,14 @@ class EnvCitycatConsole : public EnvCitycat, public RenderConsole {
       }
       os << "score: " << _score << std::endl;
       os << "done: " << _done << std::endl;
-      os << "lastAction: ";
+      os << "lastMove: ";
       if (_lastMove) 
-        os << fmtAction[*_lastMove] << std::endl;
+        os << fmtMove[*_lastMove] << std::endl;
 
       /*
       os << "actions:";
       for (auto & a : _actions)
-        os << " " << fmtAction[a];
+        os << " " << fmtMove[a];
       os << std::endl;
 
       os << "observations:" << std::endl;

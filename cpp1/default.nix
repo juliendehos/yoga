@@ -8,10 +8,8 @@ in with pkgs; stdenv.mkDerivation {
 
   buildInputs = [
     cmake
-    eigen
     libtorch-bin
     mkl
-    pkgconfig
     SDL2
     SDL2_gfx
     SDL2_ttf
