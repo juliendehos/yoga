@@ -37,24 +37,14 @@ class EnvCitycatConsole : public EnvCitycat, public RenderConsole {
       if (_lastMove) 
         os << fmtMove[*_lastMove] << std::endl;
 
-      /*
-      os << "actions:";
-      for (auto & a : _actions)
-        os << " " << fmtMove[a];
-      os << std::endl;
+      os << "actionSpace:\n";
+      printSpace(std::cout, _actionSpace);
 
-      os << "observations:" << std::endl;
-      auto o = _observations;
-      os << "  - cat: " 
-        << o._i << "," << o._j << " " 
-        << o._di << "," << o._dj << std::endl;
-      os << "  - left: " << fmtCell[o._left] << std::endl;
-      os << "  - front: ";
-      for (auto c : o._front)
-        os << fmtCell[c];
-      os << std::endl;
-      os << "  - right: " << fmtCell[o._right] << std::endl;
-      */
+      os << "observationSpace:\n";
+      printSpace(std::cout, _observationSpace);
+
+      os << "observationPoint:\n";
+      printPoint(std::cout, _observationPoint);
 
       os << std::endl;
     }

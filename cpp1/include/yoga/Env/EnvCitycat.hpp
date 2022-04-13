@@ -16,7 +16,8 @@ class EnvCitycat : public Env {
 
     using ItemDeque = std::deque<std::pair<int, int>>;
 
-    const double MAX_VITALITY = 1000; 
+    static constexpr double MAX_VITALITY = 200; 
+    static constexpr double MAX_SCORE = 100; 
 
   protected:
     const int _ni;
@@ -71,22 +72,24 @@ class EnvCitycat : public Env {
 
     void updateObservations() {
 
+      auto & discrete = _observationPoint._discrete;
+
+      std::fill(discrete.begin(), discrete.end(), cellToInt(Cell::Wall));
+
       auto [diLeft, djLeft] = moveToDij(Move::Left);
-      _observationPoint._discrete[0] = cellToInt(board(_catI+diLeft, _catJ+djLeft));
+      discrete[0] = cellToInt(board(_catI+diLeft, _catJ+djLeft));
 
-      // TODO
-      /*
-      auto [diRight, djRight] = actionToDij(Action::Right);
-      _observations._right = board(_catI+diRight, _catJ+djRight);
+      auto [diRight, djRight] = moveToDij(Move::Right);
+      discrete[1] = cellToInt(board(_catI+diRight, _catJ+djRight));
 
-      _observations._front.clear();
-      for (int k=1; k<=3; k++) {
+      for (int k=2; k<=4; k++) {
         auto c = board(_catI + k*_catDi, _catJ + k*_catDj);
-        _observations._front.push_back(c);
+        discrete[k] = cellToInt(c);
         if (c == Cell::Wall)
           break;
       }
-      */
+
+      _observationPoint._box[0] = _vitality;
 
     }
 
@@ -212,7 +215,7 @@ class EnvCitycat : public Env {
         _catDj = dj;
       }
 
-      if (_score > 100 or _vitality <= 0) {
+      if (_score => MAX_SCORE or _vitality <= 0) {
         _done = true;
       }
       else {
