@@ -14,10 +14,11 @@ struct Citycat {
     enum class Action {Left, Front, Right};
 
     struct ActionSpace {
+      const std::vector<Action> _actions 
+        {Action::Left, Action::Front, Action::Right};
+
       Action sample(Random & random) const {
-        const std::vector<Action> actions 
-          {Action::Left, Action::Front, Action::Right};
-        return random.uniformChoice(actions);
+        return random.uniformChoice(_actions);
       }
     };
 
@@ -86,27 +87,21 @@ class EnvCitycat : public Env<Citycat> {
 
     void updateObservations() {
 
-      /*
-      auto & discrete = _observationPoint._discrete;
+      auto [diLeft, djLeft] = actionToDij(Citycat::Action::Left);
+      _observation._left = board(_catI+diLeft, _catJ+djLeft);
 
-      std::fill(discrete.begin(), discrete.end(), cellToInt(Cell::Wall));
+      auto [diRight, djRight] = actionToDij(Citycat::Action::Right);
+      _observation._right = board(_catI+diRight, _catJ+djRight);
 
-      auto [diLeft, djLeft] = actionToDij(Action::Left);
-      discrete[0] = cellToInt(board(_catI+diLeft, _catJ+djLeft));
-
-      auto [diRight, djRight] = actionToDij(Action::Right);
-      discrete[1] = cellToInt(board(_catI+diRight, _catJ+djRight));
-
+      _observation._front.clear();
       for (int k=1; k<=3; k++) {
         auto c = board(_catI + k*_catDi, _catJ + k*_catDj);
-        if (c == Cell::Wall)
+        _observation._front.push_back(c);
+        if (c == Citycat::Cell::Wall)
           break;
-        discrete[1+k] = cellToInt(c);
       }
 
-      _observationPoint._box[0] = _vitality;
-      */
-
+      _observation._vitality = _vitality;
     }
 
     Citycat::Cell & board(int i, int j) {

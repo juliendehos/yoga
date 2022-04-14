@@ -39,14 +39,24 @@ class EnvCitycatConsole : public EnvCitycat, public RenderConsole {
       os << "position: " << _catI << " " << _catJ << std::endl;
       os << "direction: " << _catDi << " " << _catDj << std::endl;
 
-      os << "actionSpace:\n";
-      // TODO printSpace(std::cout, _actionSpace);
+      os << "actionSpace:";
+      for (auto a : _actionSpace._actions)
+        os << " " << fmtAction[a];
+      os << std::endl;
 
-      os << "observationSpace:\n";
-      // TODO printSpace(std::cout, _observationSpace);
+      os << "observationSpace:";
+      os << " TODO" << std::endl;
+      // TODO 
 
-      os << "observationPoint:\n";
-      // TODO printPoint(std::cout, _observationPoint);
+      os << "observation:" << std::endl;
+      auto o = _observation;
+      os << "  - left: " << fmtCell[o._left] << std::endl;
+      os << "  - front: ";
+      for (auto c : o._front)
+        os << fmtCell[c];
+      os << std::endl;
+      os << "  - right: " << fmtCell[o._right] << std::endl;
+      os << "  - vitality: " << o._vitality << std::endl;
 
       os << std::endl;
     }

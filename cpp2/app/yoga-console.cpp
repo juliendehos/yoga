@@ -1,4 +1,5 @@
 #include <yoga/Agent/AgentRandom.hpp>
+#include <yoga/Agent/AgentExpert.hpp>
 #include <yoga/Env/EnvCitycatConsole.hpp>
 
 #include <chrono>
@@ -8,7 +9,8 @@ int main() {
   using namespace std::chrono_literals;
 
   EnvCitycatConsole env(15, 30, 30, std::make_optional(42));
-  AgentRandom<Citycat> agent({});
+  // AgentRandom<Citycat> agent({});
+  AgentExpertCitycat agent;
 
   const int nSims = 10;
 
