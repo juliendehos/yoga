@@ -2,6 +2,7 @@
 
 #include <optional>
 #include <random>
+#include <vector>
 
 class Random {
   private:
@@ -14,6 +15,14 @@ class Random {
     }
 
     Random(const Random &) = delete;
+
+    template <typename T>
+    const T & uniformChoice(const std::vector<T> & v) {
+      const int n = v.size();
+      std::uniform_int_distribution<int> dist(0, n);
+      const int i = dist(_engine);
+      return v[i];
+    }
 
     int uniformInt(int a, int b) {
       std::uniform_int_distribution<int> dist(a, b);

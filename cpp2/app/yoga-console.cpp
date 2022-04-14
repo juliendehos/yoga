@@ -7,7 +7,7 @@
 int main() {
   using namespace std::chrono_literals;
 
-  EnvCitycatConsole env(20, 30, 30, std::make_optional(42));
+  EnvCitycatConsole env(15, 30, 30, std::make_optional(42));
   AgentRandom<Citycat> agent({});
 
   const int nSims = 10;

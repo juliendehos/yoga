@@ -15,10 +15,9 @@ struct Citycat {
 
     struct ActionSpace {
       Action sample(Random & random) const {
-        int x = random.uniformInt(0, 2);
         const std::vector<Action> actions 
           {Action::Left, Action::Front, Action::Right};
-        return actions[x];
+        return random.uniformChoice(actions);
       }
     };
 
@@ -66,11 +65,11 @@ class EnvCitycat : public Env<Citycat> {
 
     int cellToInt(Citycat::Cell c) const {
       switch(c) {
-        case Citycat::Cell::Cat:   return 1;
-        case Citycat::Cell::Dog:   return 2;
-        case Citycat::Cell::Food:  return 3;
-        case Citycat::Cell::Wall:  return 4;
-        default:          return 0;
+        case Citycat::Cell::Cat:  return 1;
+        case Citycat::Cell::Dog:  return 2;
+        case Citycat::Cell::Food: return 3;
+        case Citycat::Cell::Wall: return 4;
+        default:                  return 0;
       }
     }
 
@@ -178,7 +177,6 @@ class EnvCitycat : public Env<Citycat> {
     }
 
     EnvCitycat(int ni, int nj, double startingVitality, std::optional<uint64_t> s) :
-      // Env({{0}, {2}, {}, {}}, {{0,0,0,0,0}, {4,4,4,4,4}, {0}, {MAX_VITALITY}}),
       _ni(ni+2), 
       _nj(nj+2), 
       _startingVitality(std::min(startingVitality, MAX_VITALITY)),
@@ -186,8 +184,6 @@ class EnvCitycat : public Env<Citycat> {
       _board(_ni*_nj),
       _random(s)
     {
-      // _observationPoint._discrete.reserve(5);
-      // _observationPoint._box.reserve(1);
       reset();
     }
 
