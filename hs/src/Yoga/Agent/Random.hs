@@ -1,11 +1,11 @@
-{-# Language FlexibleInstances #-}
-{-# Language FunctionalDependencies #-}
+-- {-# Language FlexibleInstances #-}
+-- {-# Language FunctionalDependencies #-}
 
-module Agent.Random where
+module Yoga.Agent.Random where
 
 import qualified Data.Vector as V
 
-import Agent
+import Yoga.Agent
 
 data Zero = Zero
 

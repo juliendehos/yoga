@@ -7,15 +7,14 @@ license:            MIT
 common deps
     ghc-options:        -Wall -O2 -threaded
     default-language:   Haskell2010
-    build-depends:      base, grenade, vector
+    build-depends:      base, grenade, lens, linear, random, vector
 
 library
     import:             deps
     hs-source-dirs:     src
-    exposed-modules:    Agent
-                        Agent.Random
-                        Env
-                        Env.Citycat
+    exposed-modules:    Yoga.Agent
+                        Yoga.Agent.Random
+                        Yoga.Env
 
 executable yoga-console
     import:             deps
