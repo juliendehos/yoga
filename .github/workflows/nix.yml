@@ -19,6 +19,6 @@ jobs:
         run: nix-build
 
       - name: build hs1
-        working-directory: ./hs1
+        working-directory: ./hs
         run: nix-build
 

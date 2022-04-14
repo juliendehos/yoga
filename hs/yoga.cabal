@@ -17,10 +17,16 @@ library
                         Env
                         Env.Citycat
 
-executable citycat-cli
+executable yoga-cli
     import:             deps
-    hs-source-dirs:     app
-    main-is:            cli.hs
+    hs-source-dirs:     app/cli
+    main-is:            Main.hs
     build-depends:      yoga
+
+executable yoga-gui
+    import:             deps
+    hs-source-dirs:     app/gui
+    main-is:            Main.hs
+    build-depends:      yoga, gloss
 
 
