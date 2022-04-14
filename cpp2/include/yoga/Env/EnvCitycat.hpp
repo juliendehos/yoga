@@ -15,14 +15,23 @@ struct Citycat {
 
     struct ActionSpace {
       Action sample(Random & random) const {
-        return Action::Left;
-        // TODO
+        int x = random.uniformInt(0, 2);
+        const std::vector<Action> actions 
+          {Action::Left, Action::Front, Action::Right};
+        return actions[x];
       }
     };
 
-    struct Observation {};
+    struct Observation {
+      Cell _left;
+      Cell _right;
+      std::vector<Cell> _front;
+      double _vitality;
+    };
 
-    struct ObservationSpace {};
+    struct ObservationSpace {
+      // TODO
+    };
 
 };
 
