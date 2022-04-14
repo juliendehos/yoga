@@ -1,5 +1,5 @@
 #include <yoga/Agent/AgentRandom.hpp>
-#include <yoga/Env/EnvCitycatSdl.hpp>
+#include <yoga/Env/EnvCartpoleSdl.hpp>
 
 #include <chrono>
 #include <thread>
