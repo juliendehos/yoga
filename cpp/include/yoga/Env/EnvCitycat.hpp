@@ -40,7 +40,6 @@ class EnvCitycat : public Env<Citycat> {
 
     using ItemDeque = std::deque<std::pair<int, int>>;
 
-    static constexpr double MAX_VITALITY = 200; 
     static constexpr double MAX_SCORE = 100; 
 
   protected:
@@ -174,7 +173,7 @@ class EnvCitycat : public Env<Citycat> {
     EnvCitycat(int ni, int nj, double startingVitality, std::optional<uint64_t> s) :
       _ni(ni+2), 
       _nj(nj+2), 
-      _startingVitality(std::min(startingVitality, MAX_VITALITY)),
+      _startingVitality(startingVitality),
       _itemCapacity((_ni+_nj)/2),
       _board(_ni*_nj),
       _random(s)
@@ -203,7 +202,7 @@ class EnvCitycat : public Env<Citycat> {
 
       if (c == Citycat::Cell::Food) {
         _score += 10;
-        _vitality = std::min(_vitality+5, MAX_VITALITY);
+        _vitality += 5;
         auto it = std::find(_foods.begin(), _foods.end(), std::make_pair(i, j));
         _foods.erase(it);
       }
