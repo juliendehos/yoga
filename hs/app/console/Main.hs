@@ -1,5 +1,4 @@
 
-import Linear.V2
 import System.Random
 
 import Yoga
@@ -11,6 +10,6 @@ showEnv env =
 main :: IO ()
 main = do
   gen <- getStdGen
-  let env = mkEnv (V2 20 30) 30 gen
+  let env = mkEnv 20 30 30 gen
   putStrLn $ showEnv env
 

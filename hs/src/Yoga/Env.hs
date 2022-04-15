@@ -1,7 +1,7 @@
 -- {-# Language FunctionalDependencies #-}
 {-# Language StrictData #-}
 
--- ADT
+-- monad ST (mutable array, RandomGen)
 -- tagless final
 -- monad transformer
 
@@ -14,15 +14,19 @@ module Yoga.Env
   , mkEnv
   ) where
  
-import Control.Lens hiding (Empty)
-import Linear.V2
+-- import Control.Lens hiding (Empty)
+-- import Linear.V2
 import System.Random
 
-import Control.Monad.ST
+import Deque.Strict
+-- import Control.Monad.ST
 import Data.Massiv.Array as M
-import Data.Massiv.Array.Unsafe
+-- import Data.Massiv.Array.Unsafe
 
-import qualified Data.Vector as V
+-- import qualified Data.Vector as V
+
+emptyDeque :: Deque a
+emptyDeque = fromConsAndSnocLists [] []
 
 data Action = Left | Front | Right
 
@@ -39,10 +43,10 @@ data ObservationSpace = ObservationSpace
 
 data Cell = Empty | Cat | Dog | Food | Wall
 
-type Board s = Array B Ix2 Cell
--- type Board s = MArray s B Ix2 Cell
+type Board = Array B Ix2 Cell
+-- TODO type Board s = MArray s B Ix2 Cell
 
-data Env s = Env
+data Env = Env
   { _score :: Double
   , _done :: Bool
   , _actionSpace :: ActionSpace
@@ -50,30 +54,38 @@ data Env s = Env
   , _observation :: Observation
   , _startingVitality :: Double
   , _itemCapacity :: Int
-  , _catPij :: V2 Int
-  , _catDij :: V2 Int
-  , _board :: Board s
+  , _catPij :: Ix2
+  , _catDij :: Ix2
+  , _board :: Board 
   , _lastAction :: Maybe Action
   , _vitality :: Double
-  , _foods :: V.Vector (V2 Int)
-  , _dogs :: V.Vector (V2 Int)
+  , _foods :: Deque Ix2
+  , _dogs :: Deque Ix2
   , _gen :: StdGen -- TODO RandomGen g
   }
 
 maxScore :: Double
 maxScore = 100
 
-mkObservation :: V.Vector Cell -> V2 Int -> V2 Int -> Double -> Observation
+mkObservation :: Board -> Ix2 -> Ix2 -> Double -> Observation
 mkObservation board pij dij vitality = 
   -- TODO
   let left = Empty
   in Observation left Empty [] vitality
 
-mkEnv :: Int -> Int -> Double -> StdGen -> Env s
-mkEnv ni nj sVitality gen = 
-  let board = V.empty
-      pij = V2 1 1 -- TODO
-      dij = V2 (-1) 0
+mkBoard :: Int -> Int -> StdGen -> (Board, Ix2)
+mkBoard ni nj gen = 
+  let fBoard (Ix2 i j) = 
+        if i==0 || j==0 || i==(ni-1) || j==(nj-1) then Wall else Empty
+      board = makeArray Par (Sz2 ni nj) fBoard
+  in (board, Ix2 0 0)
+
+mkEnv :: Int -> Int -> Double -> StdGen -> Env
+mkEnv ni0 nj0 sVitality gen = 
+  let ni = ni0 + 2
+      nj = nj0 + 2
+      dij = Ix2 (-1) 0
+      (board, pij) = mkBoard ni nj gen
   in Env
       { _score = 0
       , _done = False
@@ -87,17 +99,17 @@ mkEnv ni nj sVitality gen =
       , _board = M.empty -- TODO
       , _lastAction = Nothing
       , _vitality = sVitality
-      , _foods = V.empty -- TODO
-      , _dogs = V.empty -- TODO
+      , _foods = emptyDeque
+      , _dogs = emptyDeque
       , _gen = gen
       }
 
-reset :: Env s -> Env s
+reset :: Env -> Env
 reset env = 
   let ni = 15 -- TODO
       nj = 30
   in mkEnv ni nj (_startingVitality env) (_gen env)
 
-step :: Action -> Env s -> Env s
+step :: Action -> Env -> Env
 step a e = e
 
