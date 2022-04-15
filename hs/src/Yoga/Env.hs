@@ -5,15 +5,24 @@
 -- tagless final
 -- monad transformer
 
-module Yoga.Env where
+module Yoga.Env 
+  ( Env
+  , Action (..)
+  , Cell (..)
+  , Observation (..)
+  , ObservationSpace (..)
+  , mkEnv
+  ) where
  
 import Control.Lens hiding (Empty)
 import Linear.V2
 import System.Random
 
-import qualified Data.Vector as V
+import Control.Monad.ST
+import Data.Massiv.Array as M
+import Data.Massiv.Array.Unsafe
 
-data Cell = Empty | Cat | Dog | Food | Wall
+import qualified Data.Vector as V
 
 data Action = Left | Front | Right
 
@@ -28,7 +37,12 @@ data Observation = Observation
 
 data ObservationSpace = ObservationSpace
 
-data Env = Env
+data Cell = Empty | Cat | Dog | Food | Wall
+
+type Board s = Array B Ix2 Cell
+-- type Board s = MArray s B Ix2 Cell
+
+data Env s = Env
   { _score :: Double
   , _done :: Bool
   , _actionSpace :: ActionSpace
@@ -36,10 +50,9 @@ data Env = Env
   , _observation :: Observation
   , _startingVitality :: Double
   , _itemCapacity :: Int
-  , _nij :: V2 Int
   , _catPij :: V2 Int
   , _catDij :: V2 Int
-  , _board :: V.Vector Cell
+  , _board :: Board s
   , _lastAction :: Maybe Action
   , _vitality :: Double
   , _foods :: V.Vector (V2 Int)
@@ -47,12 +60,8 @@ data Env = Env
   , _gen :: StdGen -- TODO RandomGen g
   }
 
-maxVitality, maxScore :: Double
-maxVitality = 200
+maxScore :: Double
 maxScore = 100
-
-ij2k :: V2 Int -> V2 Int -> Int
-ij2k p n = p^._x * n^._y + p^._y
 
 mkObservation :: V.Vector Cell -> V2 Int -> V2 Int -> Double -> Observation
 mkObservation board pij dij vitality = 
@@ -60,10 +69,9 @@ mkObservation board pij dij vitality =
   let left = Empty
   in Observation left Empty [] vitality
 
-mkEnv :: V2 Int -> Double -> StdGen -> Env
-mkEnv nij0 sVitality gen = 
+mkEnv :: Int -> Int -> Double -> StdGen -> Env s
+mkEnv ni nj sVitality gen = 
   let board = V.empty
-      nij1 = nij0 + V2 2 2
       pij = V2 1 1 -- TODO
       dij = V2 (-1) 0
   in Env
@@ -71,13 +79,12 @@ mkEnv nij0 sVitality gen =
       , _done = False
       , _actionSpace = ActionSpace
       , _observationSpace = ObservationSpace
-      , _observation = mkObservation board pij dij maxVitality 
-      , _startingVitality = maxVitality
-      , _itemCapacity = (nij1^._x + nij1^._y) `div` 2
-      , _nij = nij1
+      , _observation = mkObservation board pij dij sVitality 
+      , _startingVitality = sVitality
+      , _itemCapacity = (ni + nj) `div` 2
       , _catPij = pij
       , _catDij = dij
-      , _board = V.empty -- TODO
+      , _board = M.empty -- TODO
       , _lastAction = Nothing
       , _vitality = sVitality
       , _foods = V.empty -- TODO
@@ -85,9 +92,12 @@ mkEnv nij0 sVitality gen =
       , _gen = gen
       }
 
-reset :: Env -> Env
-reset env = mkEnv (_nij env) (_startingVitality env) (_gen env)
+reset :: Env s -> Env s
+reset env = 
+  let ni = 15 -- TODO
+      nj = 30
+  in mkEnv ni nj (_startingVitality env) (_gen env)
 
-step :: Action -> Env -> Env
+step :: Action -> Env s -> Env s
 step a e = e
 
