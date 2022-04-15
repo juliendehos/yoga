@@ -6,7 +6,7 @@
 -- monad transformer
 
 module Yoga.Env 
-  ( Env
+  ( Env (..)
   , Action (..)
   , Cell (..)
   , Observation (..)
@@ -96,7 +96,7 @@ mkEnv ni0 nj0 sVitality gen =
       , _itemCapacity = (ni + nj) `div` 2
       , _catPij = pij
       , _catDij = dij
-      , _board = M.empty -- TODO
+      , _board = board
       , _lastAction = Nothing
       , _vitality = sVitality
       , _foods = emptyDeque
