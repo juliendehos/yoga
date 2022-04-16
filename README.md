@@ -3,6 +3,7 @@
 
 <https://juliendehos.github.io/yoga>
 
+
 # cpp
 
 ## build
@@ -13,6 +14,13 @@ cmake -S . -B build
 cmake --build build
 ```
 
+## TODO
+
+  - sdl
+  - cartpole
+  - agent mc, nn, ql...
+
+
 # haskell
 
 ## build
@@ -21,6 +29,13 @@ cmake --build build
 nix-shell
 cabal build
 ```
+
+## TODO
+
+  - monad ST (mutable array, RandomGen)
+  - tagless final
+  - monad transformer
+
 
 # references
 
