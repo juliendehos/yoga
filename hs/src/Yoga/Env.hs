@@ -11,9 +11,10 @@ module Yoga.Env
   , step
   ) where
  
+import Control.Monad.ST
 import Data.Massiv.Array as M
-import Data.List (foldl')
-import System.Random
+-- import Data.List (foldl')
+import System.Random.MWC
 
 data Action = Left | Front | Right
 
@@ -30,10 +31,9 @@ data ObservationSpace = ObservationSpace
 
 data Cell = Empty | Cat | Dog | Food | Wall
 
-type Board = Array B Ix2 Cell
--- TODO type Board s = MArray s B Ix2 Cell
+type Board s = MArray s B Ix2 Cell
 
-data Env = Env
+data Env s = Env
   { _score :: Double
   , _done :: Bool
   , _actionSpace :: ActionSpace
@@ -43,29 +43,28 @@ data Env = Env
   , _itemCapacity :: Int
   , _catPij :: Ix2
   , _catDij :: Ix2
-  , _board :: Board 
+  , _board :: Board s
   , _lastAction :: Maybe Action
   , _vitality :: Double
   , _foods :: [Ix2]
   , _dogs :: [Ix2]
-  , _gen :: StdGen -- TODO RandomGen g
+  , _gen :: GenST s
   }
 
 maxScore :: Double
 maxScore = 100
 
-mkObservation :: Board -> Ix2 -> Ix2 -> Double -> Observation
+mkObservation :: Board s -> Ix2 -> Ix2 -> Double -> Observation
 mkObservation board pij dij vitality = 
   -- TODO
   let left = Empty
   in Observation left Empty [] vitality
 
-mkBoard :: Int -> Int -> Board
-mkBoard ni nj = 
+mkBoard :: Int -> Int -> ST s (Board s)
+mkBoard ni nj = do
   let fBoard (Ix2 i j) = 
-        if i==0 || j==0 || i==(ni-1) || j==(nj-1) then Wall else Empty
-      board = makeArray Par (Sz2 ni nj) fBoard
-  in board
+        return (if i==0 || j==0 || i==(ni-1) || j==(nj-1) then Wall else Empty)
+  makeMArrayS (Sz2 ni nj) fBoard
 
 {-
 addItems :: Board -> StdGen -> Int -> Cell -> (Board, StdGen, [Ix2])
@@ -80,17 +79,17 @@ addItems board gen nb cell =
 
 
 
-mkEnv :: Int -> Int -> Double -> StdGen -> Env
-mkEnv ni0 nj0 sVitality gen0 = 
+mkEnv :: Int -> Int -> Double -> GenST s -> ST s (Env s)
+mkEnv ni0 nj0 sVitality gen0 = do
   let ni = ni0 + 2
       nj = nj0 + 2
       dij = Ix2 (-1) 0
-      board0 = mkBoard ni nj
+  board0 <- mkBoard ni nj
       -- (board1, gen1, [pij]) = addItems board0 gen0 1 Cat
-      board = board0
+  let board = board0
       gen = gen0
       pij = Ix2 0 0
-  in Env
+  return Env
       { _score = 0
       , _done = False
       , _actionSpace = ActionSpace
@@ -108,11 +107,11 @@ mkEnv ni0 nj0 sVitality gen0 =
       , _gen = gen
       }
 
-reset :: Env -> Env
+reset :: Env s -> ST s (Env s)
 reset env = 
-  let (Sz2 ni nj) = size (_board env)
+  let (Sz2 ni nj) = msize (_board env)  -- sizeOfMArray 
   in mkEnv (ni-2) (nj-2) (_startingVitality env) (_gen env)
 
-step :: Action -> Env -> Env
+step :: Action -> Env s -> Env s
 step a e = e { _done = True }
 

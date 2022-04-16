@@ -1,7 +1,7 @@
 
-import System.Random
-
+import Control.Monad.ST
 import qualified Data.Massiv.Array as M
+import System.Random.MWC
 
 import Yoga
 
@@ -12,27 +12,30 @@ formatCell Dog = "D"
 formatCell Food = "F"
 formatCell Cat = "C"
 
-showEnv :: Env -> String
-showEnv env = 
-  unlines $ map (concatMap formatCell) $ M.toLists2 $ _board env
+showEnv :: Env s -> ST s String
+showEnv env = do
+  b <- M.freezeS (_board env)
+  return $ unlines $ map (concatMap formatCell) $ M.toLists2 b
 
-run :: Env -> Int -> IO Env
+run :: Env RealWorld -> Int -> IO (Env RealWorld)
 run env0 nSims =
-  let go :: Env -> Int -> Int -> IO Env
+  let go :: Env RealWorld -> Int -> Int -> IO (Env RealWorld)
       go env iSim iStep
-        | _done env = go (reset env) (iSim+1) 0
+        | _done env = do
+              env1 <- stToIO $ reset env
+              go env1 (iSim+1) 0
         | iSim >= nSims = return env
         | otherwise = do
             putStrLn $ "iSim: " <> show iSim
             putStrLn $ "iStep: " <> show iStep
-            putStrLn $ showEnv env
+            stToIO (showEnv env) >>= putStrLn
             go (step Yoga.Left env) iSim (iStep+1)
   in go env0 0 0
 
 main :: IO ()
 main = do
-  gen <- getStdGen
-  let env = mkEnv 15 30 30 gen
+  gen <- createSystemRandom
+  env <- stToIO $ mkEnv 15 30 30 gen
   _ <- run env 3
   return ()
 
