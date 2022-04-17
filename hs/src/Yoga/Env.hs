@@ -51,11 +51,11 @@ data Env s = Env
   , _gen :: GenST s
   }
 
-maxScore :: Double
-maxScore = 100
+-- maxScore :: Double
+-- maxScore = 100
 
 mkObservation :: Board s -> Ix2 -> Ix2 -> Double -> Observation
-mkObservation board pij dij vitality = 
+mkObservation _board _pij _dij vitality = 
   -- TODO
   let left = Empty
   in Observation left Empty [] vitality
@@ -65,6 +65,14 @@ mkBoard ni nj = do
   let fBoard (Ix2 i j) = 
         return (if i==0 || j==0 || i==(ni-1) || j==(nj-1) then Wall else Empty)
   makeMArrayS (Sz2 ni nj) fBoard
+
+addItems :: Board s -> GenST s -> Int -> Cell -> ST s [Ix2]
+addItems board gen _nb cell = do
+  let (Sz2 ni nj) = msize board
+  i <- (+ ni `div` 2) <$> uniformR (-2, 2) gen
+  j <- (+ nj `div` 2) <$> uniformR (-2, 2) gen
+  write_ board (Ix2 i j) cell
+  return [Ix2 i j]
 
 {-
 addItems :: Board -> StdGen -> Int -> Cell -> (Board, StdGen, [Ix2])
@@ -80,15 +88,12 @@ addItems board gen nb cell =
 
 
 mkEnv :: Int -> Int -> Double -> GenST s -> ST s (Env s)
-mkEnv ni0 nj0 sVitality gen0 = do
+mkEnv ni0 nj0 sVitality gen = do
   let ni = ni0 + 2
       nj = nj0 + 2
       dij = Ix2 (-1) 0
-  board0 <- mkBoard ni nj
-      -- (board1, gen1, [pij]) = addItems board0 gen0 1 Cat
-  let board = board0
-      gen = gen0
-      pij = Ix2 0 0
+  board <- mkBoard ni nj
+  [pij] <- addItems board gen 1 Cat
   return Env
       { _score = 0
       , _done = False
@@ -113,5 +118,5 @@ reset env =
   in mkEnv (ni-2) (nj-2) (_startingVitality env) (_gen env)
 
 step :: Action -> Env s -> Env s
-step a e = e { _done = True }
+step _a e = e { _done = True }
 
