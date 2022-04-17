@@ -7,11 +7,11 @@ import System.Random.MWC
 import Yoga
 
 formatCell :: Cell -> String
-formatCell Empty = "."
-formatCell Wall = "#"
-formatCell Dog = "D"
-formatCell Food = "F"
-formatCell Cat = "C"
+formatCell CEmpty = "."
+formatCell CWall = "#"
+formatCell CDog = "D"
+formatCell CFood = "F"
+formatCell CCat = "C"
 
 showEnv :: Env s -> ST s String
 showEnv env = do
@@ -31,7 +31,7 @@ run env0 nSims =
             putStrLn $ "iSim: " <> show iSim
             putStrLn $ "iStep: " <> show iStep
             stToIO (showEnv env) >>= putStrLn
-            env1 <- stToIO $ step Yoga.Left env
+            env1 <- stToIO $ step ALeft env
             go env1 iSim (iStep+1)
   in go env0 0 0
 
