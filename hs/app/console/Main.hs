@@ -13,10 +13,17 @@ formatCell CDog = "D"
 formatCell CFood = "F"
 formatCell CCat = "C"
 
-showEnv :: Env s -> ST s String
-showEnv env = do
-  b <- M.freezeS (_eBoard env)
-  return $ unlines $ map (concatMap formatCell) $ M.toLists2 b
+printEnv :: Env RealWorld -> IO ()
+printEnv env = do
+  b0 <- stToIO $ M.freezeS $ _eBoard env
+  putStr $ unlines $ map (concatMap formatCell) $ M.toLists2 b0
+
+printObservation :: Observation -> IO ()
+printObservation obs = do
+  putStrLn $ "left: " <> formatCell (_oLeft obs)
+  putStrLn $ "right: " <> formatCell (_oRight obs)
+  -- TODO front
+  putStrLn $ "vitality: " <> show (_oVitality obs)
 
 run :: Env RealWorld -> Int -> IO (Env RealWorld)
 run env0 nSims =
@@ -27,11 +34,15 @@ run env0 nSims =
               go env1 (iSim+1) 0
         | iSim >= nSims = return env
         | otherwise = do
-            threadDelay 200000
-            putStrLn $ "iSim: " <> show iSim
+            obs <- stToIO (computeObservation env)
+            -- display
+            putStrLn $ "\niSim: " <> show iSim
             putStrLn $ "iStep: " <> show iStep
-            stToIO (showEnv env) >>= putStrLn
+            printEnv env
+            printObservation obs
+            -- step
             env1 <- stToIO $ step ALeft env
+            threadDelay 200000
             go env1 iSim (iStep+1)
   in go env0 0 0
 

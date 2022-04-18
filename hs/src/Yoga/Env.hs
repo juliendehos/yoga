@@ -10,6 +10,7 @@ module Yoga.Env
   , mkEnv
   , reset
   , step
+  , computeObservation
   ) where
  
 import Control.Monad.ST
@@ -37,9 +38,9 @@ type Board s = MArray s B Ix2 Cell
 data Env s = Env
   { _eScore :: Double
   , _eDone :: Bool
-  , _eActionSpace :: ActionSpace
-  , _eObservationSpace :: ObservationSpace
-  , _eObservation :: Observation
+  -- , _eActionSpace :: ActionSpace
+  -- , _eObservationSpace :: ObservationSpace
+  -- , _eObservation :: Observation
   , _eStartingVitality :: Double
   , _eItemCapacity :: Int
   , _eCatPij :: Ix2
@@ -68,11 +69,11 @@ step action env = do
   let ij = env^.eCatPij
   write_ (env^.eBoard) ij CCat
   return $ env
-      & eScore +~ 1
-      & eVitality -~ 1
-      & eLastAction ?~ action
-      & eDone .~ (env^.eScore > 4)
-      & eCatPij +~ (env^.eCatDij)
+    & eScore +~ 1
+    & eVitality -~ 1
+    & eLastAction ?~ action
+    & eDone .~ (env^.eScore > 4)
+    & eCatPij +~ (env^.eCatDij)
 
 actionToDij :: Action -> Ix2 -> Ix2
 actionToDij ALeft (Ix2 di dj) = Ix2 (-dj) di
@@ -82,11 +83,17 @@ actionToDij AFront dij = dij
 -- maxScore :: Double
 -- maxScore = 100
 
-mkObservation :: Board s -> Ix2 -> Ix2 -> Double -> Observation
-mkObservation _board _pij _dij vitality = 
+computeObservation :: Env s -> ST s Observation
+computeObservation env = do
+  let board = env^.eBoard
+      pij = env^.eCatPij
+      dij = env^.eCatDij
+      vitality = env^.eVitality
+  left <- readM board (pij + actionToDij ALeft dij)
+  right <- readM board (pij + actionToDij ARight dij)
+  front1 <- readM board (pij + dij) -- TODO
+  return $ Observation left right [front1] vitality
   -- TODO
-  let left = CEmpty
-  in Observation left CEmpty [] vitality
 
 resetBoard :: Board s -> ST s ()
 resetBoard board =
@@ -126,21 +133,18 @@ reset' board sVitality gen = do
   pij <- addCat board gen
   foods <- addItems board gen itemCapacity0 CFood
   dogs <- addItems board gen itemCapacity0 CDog
-  return Env
-      { _eScore = 0
-      , _eDone = False
-      , _eActionSpace = ActionSpace
-      , _eObservationSpace = ObservationSpace
-      , _eObservation = mkObservation board pij dij sVitality 
-      , _eStartingVitality = sVitality
-      , _eItemCapacity = itemCapacity0
-      , _eCatPij = pij
-      , _eCatDij = dij
-      , _eBoard = board
-      , _eLastAction = Nothing
-      , _eVitality = sVitality
-      , _eFoods = foods
-      , _eDogs = dogs
-      , _eGen = gen
-      }
+  return $ Env 
+    { _eScore = 0
+    , _eDone = False
+    , _eStartingVitality = sVitality
+    , _eItemCapacity = itemCapacity0
+    , _eCatPij = pij
+    , _eCatDij = dij
+    , _eBoard = board
+    , _eLastAction = Nothing
+    , _eVitality = sVitality
+    , _eFoods = foods
+    , _eDogs = dogs
+    , _eGen = gen
+    }
 
