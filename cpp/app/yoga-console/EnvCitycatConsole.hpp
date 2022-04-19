@@ -2,8 +2,8 @@
 
 #include <map>
 
-#include "../RenderConsole.hpp"
-#include "EnvCitycat.hpp"
+#include "RenderConsole.hpp"
+#include <yoga/Env/EnvCitycat.hpp>
 
 std::map<Citycat::Cell, char> fmtCell = {
   {Citycat::Cell::Empty, '.'},

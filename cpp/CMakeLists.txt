@@ -9,11 +9,11 @@ include_directories( ${TORCH_INCLUDE} )
 
 include_directories( include )
 
-add_executable( yoga-console.out app/yoga-console.cpp )
+add_executable( yoga-console.out app/yoga-console/main.cpp )
 
-add_executable( yoga-sdl.out app/yoga-sdl.cpp )
+add_executable( yoga-sdl.out app/yoga-sdl/main.cpp )
 
-add_executable( sinc.out app/sinc.cpp )
+add_executable( sinc.out app/sinc/main.cpp )
 target_link_libraries( sinc.out  ${TORCH_LIBRARIES} )
 
 install( TARGETS yoga-console.out yoga-sdl.out sinc.out DESTINATION bin )

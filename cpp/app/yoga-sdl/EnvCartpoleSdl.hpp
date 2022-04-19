@@ -1,7 +1,7 @@
 #pragma once
 
-#include "../RenderSdl.hpp"
-#include "EnvCartpole.hpp"
+#include "RenderSdl.hpp"
+#include <yoga/Env/EnvCartpole.hpp>
 
 class EnvCartpoleSdl : public EnvCartpole, public RenderSdl {
   public:

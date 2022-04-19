@@ -1,16 +1,16 @@
 #include <yoga/Agent/AgentRandom.hpp>
-#include <yoga/Env/EnvCartpoleSdl.hpp>
+#include <yoga/Agent/AgentExpert.hpp>
+#include "EnvCitycatConsole.hpp"
 
 #include <chrono>
 #include <thread>
 
 int main() {
-  /*
   using namespace std::chrono_literals;
 
-  EnvCitycatSdl env(20, 30, 30, std::make_optional(42));
-  AgentRandom agent(env.observationSpace(), env.actionSpace(), {});
-  // AgentFirst agent(env.observationSpace(), env.actionSpace());
+  EnvCitycatConsole env(15, 30, 30, std::make_optional(42));
+  // AgentRandom<Citycat> agent({});
+  AgentExpertCitycat agent;
 
   const int nSims = 10;
 
@@ -19,21 +19,21 @@ int main() {
 
     do {
       std::this_thread::sleep_for(200ms);
-      auto action = agent.genAction(env.observationPoint());
+      auto action = agent.genAction(
+          env.observationSpace(),
+          env.observation(),
+          env.actionSpace());
       env.step(action);
       iSteps++;
 
       std::cout << "iSims: " << iSims << std::endl;
       std::cout << "iSteps: " << iSteps << std::endl;
-
-      // TODO
-      // env.render(std::cout);
+      env.render(std::cout);
 
     } while (not env.done());
 
     env.reset();
   }
-  */
 
   return 0;
 }
