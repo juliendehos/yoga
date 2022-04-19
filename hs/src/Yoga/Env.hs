@@ -7,6 +7,7 @@ module Yoga.Env
   , Cell (..)
   , Observation (..)
   , ObservationSpace (..)
+  , ActionSpace (..)
   , mkEnv
   , reset
   , step
