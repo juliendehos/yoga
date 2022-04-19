@@ -1,4 +1,3 @@
-
 import Control.Concurrent
 import Control.Monad.ST
 import qualified Data.Massiv.Array as M
@@ -40,6 +39,8 @@ run env0 nSims =
               go env1 (iSim+1) 0
         | iSim >= nSims = return env
         | otherwise = do
+            let (M.Ix2 i j) = _eCatPij env
+                (M.Ix2 di dj) = _eCatDij env
             obs <- stToIO (getObservation env)
             -- display
             putStrLn $ "\niSim: " <> show iSim
@@ -48,13 +49,13 @@ run env0 nSims =
             putStrLn $ "score: " <> show (_eScore env)
             putStrLn $ "done: " <> show (_eDone env)
             putStrLn $ "lastAction: " <> maybe "" formatAction (_eLastAction env)
-            putStrLn "position: TODO"
-            putStrLn "direction: TODO"
+            putStrLn $ "position: " <> show i <> " " <> show j
+            putStrLn $ "direction: " <> show di <> " " <> show dj
             putStrLn "actionSpace: TODO"
             putStrLn "observationSpace: TODO"
             printObservation obs
             -- step
-            env1 <- stToIO $ step ALeft env
+            env1 <- stToIO $ step AFront env -- TODO genAction
             threadDelay 200000
             go env1 iSim (iStep+1)
   in go env0 0 0
