@@ -13,17 +13,23 @@ formatCell CDog = "D"
 formatCell CFood = "F"
 formatCell CCat = "C"
 
-printEnv :: Env RealWorld -> IO ()
-printEnv env = do
+formatAction :: Action -> String
+formatAction ALeft = "left"
+formatAction AFront = "front"
+formatAction ARight = "right"
+
+printEnvBoard :: Env RealWorld -> IO ()
+printEnvBoard env = do
   b0 <- stToIO $ M.freezeS $ _eBoard env
   putStr $ unlines $ map (concatMap formatCell) $ M.toLists2 b0
 
 printObservation :: Observation -> IO ()
 printObservation obs = do
-  putStrLn $ "left: " <> formatCell (_oLeft obs)
-  putStrLn $ "right: " <> formatCell (_oRight obs)
-  -- TODO front
-  putStrLn $ "vitality: " <> show (_oVitality obs)
+  putStrLn "observation: "
+  putStrLn $ "  - left: " <> formatCell (_oLeft obs)
+  putStrLn $ "  - front: " <> concatMap formatCell (_oFront obs)
+  putStrLn $ "  - right: " <> formatCell (_oRight obs)
+  putStrLn $ "  - vitality: " <> show (_oVitality obs)
 
 run :: Env RealWorld -> Int -> IO (Env RealWorld)
 run env0 nSims =
@@ -34,11 +40,18 @@ run env0 nSims =
               go env1 (iSim+1) 0
         | iSim >= nSims = return env
         | otherwise = do
-            obs <- stToIO (computeObservation env)
+            obs <- stToIO (getObservation env)
             -- display
             putStrLn $ "\niSim: " <> show iSim
             putStrLn $ "iStep: " <> show iStep
-            printEnv env
+            printEnvBoard env
+            putStrLn $ "score: " <> show (_eScore env)
+            putStrLn $ "done: " <> show (_eDone env)
+            putStrLn $ "lastAction: " <> maybe "" formatAction (_eLastAction env)
+            putStrLn "position: TODO"
+            putStrLn "direction: TODO"
+            putStrLn "actionSpace: TODO"
+            putStrLn "observationSpace: TODO"
             printObservation obs
             -- step
             env1 <- stToIO $ step ALeft env

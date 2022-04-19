@@ -10,7 +10,9 @@ module Yoga.Env
   , mkEnv
   , reset
   , step
-  , computeObservation
+  , getObservation
+  , getObservationSpace
+  , getActionSpace
   ) where
  
 import Control.Monad.ST
@@ -20,7 +22,7 @@ import System.Random.MWC
 
 data Action = ALeft | AFront | ARight
 
-data ActionSpace = ActionSpace
+newtype ActionSpace = ActionSpace [Action]
 
 data Observation = Observation
   { _oLeft :: Cell
@@ -38,9 +40,6 @@ type Board s = MArray s B Ix2 Cell
 data Env s = Env
   { _eScore :: Double
   , _eDone :: Bool
-  -- , _eActionSpace :: ActionSpace
-  -- , _eObservationSpace :: ObservationSpace
-  -- , _eObservation :: Observation
   , _eStartingVitality :: Double
   , _eItemCapacity :: Int
   , _eCatPij :: Ix2
@@ -66,8 +65,11 @@ reset env = reset' (_eBoard env) (_eStartingVitality env) (_eGen env)
 
 step :: Action -> Env s -> ST s (Env s)
 step action env = do
-  let ij = env^.eCatPij
-  write_ (env^.eBoard) ij CCat
+  let dij0 = env^.eCatDij
+      pij0 = env^.eCatPij
+      pij1 = pij0 + dij0
+  write_ (env^.eBoard) pij1 CCat
+  write_ (env^.eBoard) pij0 CEmpty
   return $ env
     & eScore +~ 1
     & eVitality -~ 1
@@ -83,17 +85,31 @@ actionToDij AFront dij = dij
 -- maxScore :: Double
 -- maxScore = 100
 
-computeObservation :: Env s -> ST s Observation
-computeObservation env = do
+getActionSpace :: Env s -> ST s ActionSpace
+getActionSpace _ = return $ ActionSpace [ALeft, AFront, ARight]
+
+getObservationSpace :: Env s -> ST s ObservationSpace
+getObservationSpace _ = return ObservationSpace
+
+getObservation :: Env s -> ST s Observation
+getObservation env = do
   let board = env^.eBoard
       pij = env^.eCatPij
       dij = env^.eCatDij
       vitality = env^.eVitality
+
+      goFront _ 0 = return []
+      goFront ij0 nb = do
+        let ij1 = ij0 + dij
+        c <- readM board ij1
+        case c of
+          CWall -> return [c]
+          _ -> (c:) <$> goFront ij1 (nb - 1::Int) 
+
   left <- readM board (pij + actionToDij ALeft dij)
   right <- readM board (pij + actionToDij ARight dij)
-  front1 <- readM board (pij + dij) -- TODO
-  return $ Observation left right [front1] vitality
-  -- TODO
+  front1 <- goFront pij 2
+  return $ Observation left right front1 vitality
 
 resetBoard :: Board s -> ST s ()
 resetBoard board =
