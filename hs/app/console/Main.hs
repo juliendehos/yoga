@@ -42,6 +42,7 @@ run env0 nSims =
             let (M.Ix2 i j) = _eCatPij env
                 (M.Ix2 di dj) = _eCatDij env
             obs <- stToIO (getObservation env)
+            ActionSpace actions <- stToIO $ getActionSpace env
             -- display
             putStrLn $ "\niSim: " <> show iSim
             putStrLn $ "iStep: " <> show iStep
@@ -51,7 +52,6 @@ run env0 nSims =
             putStrLn $ "lastAction: " <> maybe "" formatAction (_eLastAction env)
             putStrLn $ "position: " <> show i <> " " <> show j
             putStrLn $ "direction: " <> show di <> " " <> show dj
-            (ActionSpace actions) <- stToIO $ getActionSpace env
             putStrLn $ "actionSpace: " <> unwords (map formatAction actions)
             putStrLn "observationSpace: TODO"
             printObservation obs

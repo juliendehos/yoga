@@ -18,7 +18,9 @@ module Yoga.Env
 
 import Control.Lens hiding (Empty)
 import Control.Monad (foldM)
+-- import Control.Monad (foldM, when)
 import Control.Monad.ST
+-- import Data.STRef
 import Data.Massiv.Array as M hiding (mapM, init)
 import System.Random.MWC (GenST, uniformR)
 
@@ -66,7 +68,44 @@ mkEnv ni0 nj0 sVitality gen = do
 reset :: Env s -> ST s (Env s)
 reset env = reset' (_eBoard env) (env^.eStartingVitality) (_eGen env)
 
--- TODO refactor using runST ?
+{-
+step :: Action -> Env s -> ST s (Env s)
+step action env0 = do
+  let dij = actionToDij action (env0^.eCatDij)
+      pij0 = env0^.eCatPij
+      pij1 = pij0 + dij
+      board = env0^.eBoard
+  ref <- newSTRef $ env0 & eScore +~ 1
+                         & eVitality -~ 1
+                         & eLastAction ?~ action
+  cell1 <- readM board pij1 
+  if cell1 == CDog
+  then modifySTRef' ref $ (eScore -~ 5)
+                        . (eDone .~ True)
+  else do
+    when (cell1 == CFood) $
+      modifySTRef' ref $ (eScore +~ 10)
+                       . (eVitality +~ 5)
+                       . (eFoods %~ filter (/=pij1))
+    if cell1 == CWall
+    then modifySTRef' ref $ eScore -~ 2
+    else do 
+      write_ board pij1 CCat
+      write_ board pij0 CEmpty
+      modifySTRef' ref $ eCatPij .~ pij1
+    env3 <- readSTRef ref
+    if env3^.eScore >= maxScore || env3^.eVitality <= 0
+    then modifySTRef' ref $ eDone .~ True
+    else do
+      let gen = env3^.eGen
+          itemCapacity = env3^.eItemCapacity
+      foods <- addItem board gen itemCapacity CFood (env3^.eFoods) 1
+      dogs <- addItem board gen itemCapacity CDog (env3^.eDogs) 1
+      modifySTRef' ref $ (eFoods .~ foods)
+                       . (eDogs .~ dogs)
+  readSTRef ref
+-}
+
 step :: Action -> Env s -> ST s (Env s)
 step action env0 = do
   let dij = actionToDij action (env0^.eCatDij)
@@ -92,7 +131,6 @@ step action env0 = do
         write_ board pij1 CCat
         write_ board pij0 CEmpty
         return $ env2 & eCatPij .~ pij1
-
     if env3^.eScore >= maxScore || env3^.eVitality <= 0
     then return $ env3 & eDone .~ True
     else do
@@ -147,18 +185,16 @@ resetBoard board =
 addCat :: Board s -> GenST s -> ST s Ix2
 addCat board gen = do
   let (Sz2 ni nj) = msize board
-  i <- (+ ni `div` 2) <$> uniformR (-2, 2) gen
-  j <- (+ nj `div` 2) <$> uniformR (-2, 2) gen
-  write_ board (Ix2 i j) CCat
-  return (Ix2 i j)
+      m = Ix2 (ni `div` 2) (nj `div` 2)
+  ij <- (+m) . uncurry Ix2 <$> uniformR ((-2, -2), (2, 2)) gen
+  write_ board ij CCat
+  return ij
 
 addItem :: Board s -> GenST s -> Int-> Cell -> [Ix2] -> Int -> ST s [Ix2]
 addItem board gen itemCapacity cell items0 _i = do
   let (Sz2 ni nj) = msize board
       fSample = do
-        i <- uniformR (1, ni-2) gen
-        j <- uniformR (1, nj-2) gen
-        let ij = Ix2 i j
+        ij <- uncurry Ix2 <$> uniformR ((1, 1), (ni-2, nj-2)) gen
         c <- readM board ij
         case c of
           CEmpty -> write_ board ij cell >> return ij
@@ -166,9 +202,7 @@ addItem board gen itemCapacity cell items0 _i = do
   items1 <- (:items0) <$> fSample
   if length items1 < itemCapacity 
   then return items1
-  else do
-    write_ board (last items1) CEmpty
-    return $ init items1
+  else write_ board (last items1) CEmpty >> return (init items1)
 
 reset' :: Board s -> Double -> GenST s -> ST s (Env s)
 reset' board sVitality gen = do
