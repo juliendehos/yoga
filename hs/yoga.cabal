@@ -12,7 +12,10 @@ common deps
                       , lens
                       -- , linear
                       , massiv
+                      , monad-st
+                      , MonadRandom
                       , mwc-random
+                      , random
                       , vector
 
 library
@@ -20,6 +23,8 @@ library
     hs-source-dirs:     src
     exposed-modules:    Yoga
                         Yoga.Agent
+                        Yoga.Agent.Expert
+                        Yoga.Agent.Random
                         Yoga.Env
 
 executable yoga-console

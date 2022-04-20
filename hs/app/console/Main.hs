@@ -1,7 +1,10 @@
-import Control.Concurrent
-import Control.Monad.ST
+module Main (main) where
+
+import           Control.Concurrent
+import           Control.Monad.IO.Class
+import           Control.Monad.ST
 import qualified Data.Massiv.Array as M
-import System.Random.MWC
+import           System.Random.MWC
 
 import Yoga
 
@@ -30,44 +33,43 @@ printObservation obs = do
   putStrLn $ "  - right: " <> formatCell (_oRight obs)
   putStrLn $ "  - vitality: " <> show (_oVitality obs)
 
-run :: Env RealWorld -> Agent RealWorld -> Int -> IO (Env RealWorld)
-run env0 agent nSims =
-  let go :: Env RealWorld -> Int -> Int -> IO (Env RealWorld)
-      go env iSim iStep
-        | _eDone env = do
-              env1 <- stToIO $ reset env
-              go env1 (iSim+1) 0
-        | iSim >= nSims = return env
-        | otherwise = do
-            obs <- stToIO (getObservation env)
-            as <- stToIO (getActionSpace env)
-            let ActionSpace actions = as
-                (M.Ix2 i j) = _eCatPij env
-                (M.Ix2 di dj) = _eCatDij env
-            -- display
-            putStrLn $ "\niSim: " <> show iSim
-            putStrLn $ "iStep: " <> show iStep
-            printEnvBoard env
-            putStrLn $ "score: " <> show (_eScore env)
-            putStrLn $ "done: " <> show (_eDone env)
-            putStrLn $ "lastAction: " <> maybe "" formatAction (_eLastAction env)
-            putStrLn $ "position: " <> show i <> " " <> show j
-            putStrLn $ "direction: " <> show di <> " " <> show dj
-            putStrLn $ "actionSpace: " <> unwords (map formatAction actions)
-            putStrLn "observationSpace: TODO"
-            printObservation obs
-            -- step
-            action <- stToIO $ genAction obs as agent
-            env1 <- stToIO $ step action env 
-            threadDelay 200000
-            go env1 iSim (iStep+1)
-  in go env0 0 0
+run :: (MonadAgent m, MonadIO m) => Env RealWorld -> Int -> m (Env RealWorld)
+run env0 nSims = go env0 0 nSims 0
+
+go :: (MonadAgent m, MonadIO m) => Env RealWorld -> Int -> Int -> Int -> m (Env RealWorld)
+go env iSim nSims iStep
+  | _eDone env = do
+        env1 <- liftIO $ stToIO $ reset env
+        go env1 (iSim+1) nSims 0
+  | iSim >= nSims = return env
+  | otherwise = do
+      obs <- liftIO $ stToIO (getObservation env)
+      as <- liftIO $ stToIO (getActionSpace env)
+      let ActionSpace actions = as
+          (M.Ix2 i j) = _eCatPij env
+          (M.Ix2 di dj) = _eCatDij env
+      -- display
+      liftIO $ putStrLn $ "\niSim: " <> show iSim
+      liftIO $ putStrLn $ "iStep: " <> show iStep
+      liftIO $ printEnvBoard env
+      liftIO $ putStrLn $ "score: " <> show (_eScore env)
+      liftIO $ putStrLn $ "done: " <> show (_eDone env)
+      liftIO $ putStrLn $ "lastAction: " <> maybe "" formatAction (_eLastAction env)
+      liftIO $ putStrLn $ "position: " <> show i <> " " <> show j
+      liftIO $ putStrLn $ "direction: " <> show di <> " " <> show dj
+      liftIO $ putStrLn $ "actionSpace: " <> unwords (map formatAction actions)
+      liftIO $ putStrLn "observationSpace: TODO"
+      liftIO $ printObservation obs
+      -- step
+      action <- genAction obs as
+      env1 <- liftIO $ stToIO $ step action env 
+      liftIO $ threadDelay 200000
+      go env1 iSim nSims (iStep+1)
 
 main :: IO ()
 main = do
   genEnv <- createSystemRandom
   env <- stToIO (mkEnv 15 30 30 genEnv >>= reset)
-  agent <- Agent <$> createSystemRandom
-  _ <- run env agent 3
+  _ <- runAgentRandom (run env 3)
   return ()
 
