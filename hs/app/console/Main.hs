@@ -30,8 +30,8 @@ printObservation obs = do
   putStrLn $ "  - right: " <> formatCell (_oRight obs)
   putStrLn $ "  - vitality: " <> show (_oVitality obs)
 
-run :: Env RealWorld -> Int -> IO (Env RealWorld)
-run env0 nSims =
+run :: Env RealWorld -> Agent RealWorld -> Int -> IO (Env RealWorld)
+run env0 agent nSims =
   let go :: Env RealWorld -> Int -> Int -> IO (Env RealWorld)
       go env iSim iStep
         | _eDone env = do
@@ -39,10 +39,11 @@ run env0 nSims =
               go env1 (iSim+1) 0
         | iSim >= nSims = return env
         | otherwise = do
-            let (M.Ix2 i j) = _eCatPij env
-                (M.Ix2 di dj) = _eCatDij env
             obs <- stToIO (getObservation env)
-            ActionSpace actions <- stToIO $ getActionSpace env
+            as <- stToIO (getActionSpace env)
+            let ActionSpace actions = as
+                (M.Ix2 i j) = _eCatPij env
+                (M.Ix2 di dj) = _eCatDij env
             -- display
             putStrLn $ "\niSim: " <> show iSim
             putStrLn $ "iStep: " <> show iStep
@@ -56,15 +57,17 @@ run env0 nSims =
             putStrLn "observationSpace: TODO"
             printObservation obs
             -- step
-            env1 <- stToIO $ step AFront env -- TODO genAction
+            action <- stToIO $ genAction obs as agent
+            env1 <- stToIO $ step action env 
             threadDelay 200000
             go env1 iSim (iStep+1)
   in go env0 0 0
 
 main :: IO ()
 main = do
-  gen <- createSystemRandom
-  env <- stToIO (mkEnv 15 30 30 gen >>= reset)
-  _ <- run env 3
+  genEnv <- createSystemRandom
+  env <- stToIO (mkEnv 15 30 30 genEnv >>= reset)
+  agent <- Agent <$> createSystemRandom
+  _ <- run env agent 3
   return ()
 

@@ -8,13 +8,11 @@ common deps
     ghc-options:        -Wall -O2 -threaded
     default-language:   Haskell2010
     build-depends:      base
-                      -- , deque
                       , grenade
                       , lens
                       -- , linear
                       , massiv
                       , mwc-random
-                      -- , random
                       , vector
 
 library
@@ -22,7 +20,6 @@ library
     hs-source-dirs:     src
     exposed-modules:    Yoga
                         Yoga.Agent
-                        Yoga.Agent.Random
                         Yoga.Env
 
 executable yoga-console
@@ -36,5 +33,4 @@ executable yoga-gloss
     hs-source-dirs:     app/gloss
     main-is:            Main.hs
     build-depends:      yoga, gloss
-
 

@@ -32,7 +32,10 @@ cabal build
 
 ## TODO
 
-  - monad ST (mutable array, RandomGen)
+  - random (StateGen) + random-fu
+  - agent first
+  - env cartpole
+
   - tagless final
   - monad transformer
 
