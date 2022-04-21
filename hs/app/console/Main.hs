@@ -1,7 +1,11 @@
 module Main (main) where
 
+import Data.STRef
+import Control.Monad.Trans.Class
+
 import           Control.Concurrent
 import           Control.Monad.IO.Class
+import           Control.Monad.Random.Class
 import           Control.Monad.ST
 import           Control.Monad.ST.Class
 import qualified Data.Massiv.Array as M
@@ -21,9 +25,9 @@ formatAction ALeft = "left"
 formatAction AFront = "front"
 formatAction ARight = "right"
 
-printEnvBoard :: (MonadIO m, MonadST m) => Env RealWorld -> m ()
+printEnvBoard :: (MonadIO m, MonadST m) => Env m -> m ()
 printEnvBoard env = do
-  b0 <- liftIO $ stToIO $ M.freezeS $ _eBoard env
+  b0 <- liftST $ M.freezeS $ _eBoard env
   liftIO $ putStr $ unlines $ map (concatMap formatCell) $ M.toLists2 b0
 
 printObservation :: Observation -> IO ()
@@ -34,25 +38,25 @@ printObservation obs = do
   putStrLn $ "  - right: " <> formatCell (_oRight obs)
   putStrLn $ "  - vitality: " <> show (_oVitality obs)
 
-run :: (MonadAgent m, MonadIO m) => Env RealWorld -> Int -> m (Env RealWorld)
+run :: (MonadAgent m, MonadIO m, MonadRandom m, MonadST m) => Env m -> Int -> m (Env m)
 run env0 nSims = go env0 0 0
   where
-    go :: (MonadAgent m, MonadIO m) => Env RealWorld -> Int -> Int -> m (Env RealWorld)
+    go :: (MonadAgent m, MonadIO m, MonadRandom m, MonadST m) => Env m -> Int -> Int -> m (Env m)
     go env iSim iStep
       | _eDone env = do
-            env1 <- liftIO $ stToIO $ reset env
+            env1 <- reset env
             go env1 (iSim+1) 0
       | iSim >= nSims = return env
       | otherwise = do
-          obs <- liftIO $ stToIO (getObservation env)
-          as <- liftIO $ stToIO (getActionSpace env)
+          obs <- getObservation env
+          as <- getActionSpace env
           let ActionSpace actions = as
               (M.Ix2 i j) = _eCatPij env
               (M.Ix2 di dj) = _eCatDij env
           -- display
           liftIO $ putStrLn $ "\niSim: " <> show iSim
           liftIO $ putStrLn $ "iStep: " <> show iStep
-          liftIO $ printEnvBoard env
+          printEnvBoard env
           liftIO $ putStrLn $ "score: " <> show (_eScore env)
           liftIO $ putStrLn $ "done: " <> show (_eDone env)
           liftIO $ putStrLn $ "lastAction: " <> maybe "" formatAction (_eLastAction env)
@@ -63,14 +67,31 @@ run env0 nSims = go env0 0 0
           liftIO $ printObservation obs
           -- step
           action <- genAction obs as
-          env1 <- liftIO $ stToIO $ step action env 
+          env1 <- step action env 
           liftIO $ threadDelay 200000
           go env1 iSim (iStep+1)
 
 main :: IO ()
 main = do
-  genEnv <- createSystemRandom
-  env <- stToIO (mkEnv 15 30 30 genEnv >>= reset)
+  env <- mkEnv 15 30 30 >>= reset
+  -- _ <- run env 3
+  -- _ <- run (runAgentRandom env) 3
   _ <- runAgentRandom (run env 3)
+  -- _ <- runAgentRandom (run env 3)
   return ()
+
+{-
+
+myComputation :: MonadST m => Int -> m Int
+myComputation x0 = do
+  ref <- liftST $ newSTRef x0
+  liftST $ modifySTRef' ref (+1)
+  liftST $ readSTRef ref
+
+main :: IO ()
+main = do
+  putStrLn "TODO"
+  print $ runST $ myComputation 41
+
+-}
 

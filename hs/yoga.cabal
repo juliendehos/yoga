@@ -10,12 +10,13 @@ common deps
     build-depends:      base
                       , grenade
                       , lens
-                      -- , linear
+                      , linear
                       , massiv
                       , monad-st
                       , MonadRandom
                       , mwc-random
                       , random
+                      , transformers
                       , vector
 
 library
