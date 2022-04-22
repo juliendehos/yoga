@@ -1,3 +1,4 @@
+{-# Language GeneralizedNewtypeDeriving #-}
 {-# Language StrictData #-}
 {-# Language TemplateHaskell #-}
 
@@ -43,6 +44,49 @@ data Cell = CEmpty | CCat | CDog | CFood | CWall
 
 type Board m = MArray (World m) B Ix2 Cell
 
+class MonadEnv m where
+  getActionSpace :: m ActionSpace
+  getObservationSpace :: m ObservationSpace
+  getObservation :: m Observation
+  reset :: m ()
+  step :: Action -> m ()
+
+newtype EnvCitycat m a = EnvCitycat { runEnvCitycat :: m a }
+  deriving (Functor, Applicative, Monad, MonadST, MonadRandom)
+
+instance Monad m => MonadEnv (EnvCitycat m) where
+  getActionSpace = return $ ActionSpace [ALeft, AFront, ARight]
+
+  getObservationSpace = return ObservationSpace
+
+  getObservation = do
+    let board = env^.eBoard
+        pij = env^.eCatPij
+        dij = env^.eCatDij
+        vitality = env^.eVitality
+
+        goFront _ 0 = return []
+        goFront ij0 nb = do
+          let ij1 = ij0 + dij
+          c <- liftST $ readM board ij1
+          case c of
+            CWall -> return [c]
+            _ -> (c:) <$> goFront ij1 (nb - 1::Int) 
+
+    left <- liftST $ readM board (pij + actionToDij ALeft dij)
+    right <- liftST $ readM board (pij + actionToDij ARight dij)
+    front1 <- goFront pij 2
+    return $ Observation left right front1 vitality
+
+
+  reset = 
+
+  step = 
+
+
+
+
+
 data Env m = Env
   { _eScore :: Double
   , _eDone :: Bool
@@ -65,8 +109,8 @@ mkEnv ni0 nj0 sVitality = do
   board <- liftST $ newMArray (Sz2 ni nj) CEmpty
   reset' board sVitality
 
-reset :: (MonadRandom m, MonadST m) => Env m -> m (Env m)
-reset env = reset' (_eBoard env) (env^.eStartingVitality)
+reset0 :: (MonadRandom m, MonadST m) => Env m -> m (Env m)
+reset0 env = reset' (_eBoard env) (env^.eStartingVitality)
 
 actionToDij :: Action -> Ix2 -> Ix2
 actionToDij ALeft (Ix2 di dj) = Ix2 (-dj) di
@@ -76,31 +120,10 @@ actionToDij AFront dij = dij
 maxScore :: Double
 maxScore = 100
 
-getActionSpace :: (MonadST m) => Env m -> m ActionSpace
-getActionSpace _ = return $ ActionSpace [ALeft, AFront, ARight]
+getObservation0 env = 
 
-getObservationSpace :: (MonadST m) => Env m -> m ObservationSpace
-getObservationSpace _ = return ObservationSpace
 
-getObservation :: (MonadST m) => Env m -> m Observation
-getObservation env = do
-  let board = env^.eBoard
-      pij = env^.eCatPij
-      dij = env^.eCatDij
-      vitality = env^.eVitality
 
-      goFront _ 0 = return []
-      goFront ij0 nb = do
-        let ij1 = ij0 + dij
-        c <- liftST $ readM board ij1
-        case c of
-          CWall -> return [c]
-          _ -> (c:) <$> goFront ij1 (nb - 1::Int) 
-
-  left <- liftST $ readM board (pij + actionToDij ALeft dij)
-  right <- liftST $ readM board (pij + actionToDij ARight dij)
-  front1 <- goFront pij 2
-  return $ Observation left right front1 vitality
 
 resetBoard :: (MonadRandom m, MonadST m) => Board m -> m ()
 resetBoard board =
@@ -159,8 +182,8 @@ reset' board sVitality = do
     , _eDogs = dogs
     }
 
-step :: (MonadRandom m, MonadST m) => Action -> Env m -> m (Env m)
-step action env0 = do
+step0 :: (MonadRandom m, MonadST m) => Action -> Env m -> m (Env m)
+step0 action env0 = do
   let dij = actionToDij action (env0^.eCatDij)
       pij0 = env0^.eCatPij
       pij1 = pij0 + dij

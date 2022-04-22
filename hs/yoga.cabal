@@ -40,3 +40,8 @@ executable yoga-gloss
     main-is:            Main.hs
     build-depends:      yoga, gloss
 
+executable yoga-test
+    import:             deps
+    hs-source-dirs:     app/test
+    main-is:            Main.hs
+

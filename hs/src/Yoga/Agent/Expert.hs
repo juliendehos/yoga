@@ -1,4 +1,4 @@
-{-# LANGUAGE GeneralizedNewtypeDeriving #-}
+{-# Language GeneralizedNewtypeDeriving #-}
 
 module Yoga.Agent.Expert where
 
