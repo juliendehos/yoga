@@ -2,11 +2,24 @@
 {-# Language FlexibleContexts #-}
 {-# Language FlexibleInstances #-}
 {-# Language FunctionalDependencies #-}
--- {-# Language MultiParamTypeClasses #-}
+
+-- TODO AgentRandom
+-- TODO EnvCartpole
 
 import Control.Monad.IO.Class
--- import Control.Monad.Random.Class
+import Control.Monad.Random.Class
 import Control.Monad.ST.Class
+
+-------------------------------------------------------------------------------
+-- env + agent
+-------------------------------------------------------------------------------
+
+class MonadEnv env actionSpace action m | env -> actionSpace action where
+  getActionSpace :: env -> m actionSpace
+  step :: action -> env -> m env
+
+class MonadAgent actionSpace action agent m where
+  genAction :: actionSpace -> agent -> m (action, agent)
 
 -------------------------------------------------------------------------------
 -- citycat
@@ -35,14 +48,6 @@ stepCitycat action citycat = citycat
 getActionSpaceCitycat :: ActionSpace
 getActionSpaceCitycat = ActionSpace [ALeft, AFront, ARight]
 
--------------------------------------------------------------------------------
--- env
--------------------------------------------------------------------------------
-
-class MonadEnv env actionSpace action m | env -> actionSpace action where
-  getActionSpace :: env -> m actionSpace
-  step :: action -> env -> m env
-
 newtype EnvCitycat m a = EnvCitycat { runEnvCitycat :: m a }
   deriving (Functor, Applicative, Monad, MonadST, MonadIO)
 
@@ -52,11 +57,8 @@ instance Monad m => MonadEnv Citycat ActionSpace Action (EnvCitycat m) where
   step action env = return $ stepCitycat action env
 
 -------------------------------------------------------------------------------
--- agent
+-- expert
 -------------------------------------------------------------------------------
-
-class MonadAgent actionSpace action agent m where
-  genAction :: actionSpace -> agent -> m (action, agent)
 
 newtype Expert = Expert
   { _eIndex :: Int
@@ -100,8 +102,9 @@ app env0 agent0 = do
 main :: IO ()
 main = do
   putStrLn "test"
-  let env0 = mkCitycat
-      agent0 = mkExpert
+  let 
+    env0 = mkCitycat
+    agent0 = mkExpert
   (env1, agent1) <- runEnvCitycat $ runAgentExpert $ app env0 agent0
   print env1
   print agent1
