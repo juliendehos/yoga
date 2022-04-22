@@ -9,8 +9,8 @@ int main() {
   using namespace std::chrono_literals;
 
   EnvCitycatConsole env(15, 30, 30, std::make_optional(42));
-  // AgentRandom<Citycat> agent({});
-  AgentExpertCitycat agent;
+  AgentRandom<Citycat> agent({});
+  // AgentExpertCitycat agent;
 
   const int nSims = 10;
 
@@ -26,8 +26,8 @@ int main() {
       env.step(action);
       iSteps++;
 
-      std::cout << "iSims: " << iSims << std::endl;
-      std::cout << "iSteps: " << iSteps << std::endl;
+      std::cout << "iSim: " << iSims << std::endl;
+      std::cout << "iStep: " << iSteps << std::endl;
       env.render(std::cout);
 
     } while (not env.done());
