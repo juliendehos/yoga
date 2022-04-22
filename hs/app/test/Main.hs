@@ -3,6 +3,7 @@
 import Control.Monad.IO.Class
 import Control.Monad.Random.Class
 import Control.Monad.ST.Class
+import Control.Monad.Trans.Class
 
 -------------------------------------------------------------------------------
 -- common
@@ -16,21 +17,6 @@ newtype ActionSpace = ActionSpace { unActionSpace :: [Action] }
 
 data Action = ALeft | AFront | ARight
   deriving Show
-
--------------------------------------------------------------------------------
--- agent
--------------------------------------------------------------------------------
-
-class MonadAgent m where
-  genAction :: Observation -> ActionSpace -> m Action
-
-newtype AgentExpert m a = AgentExpert { runAgentExpert :: m a }
-  deriving (Functor, Applicative, Monad, MonadIO)
-
-instance Monad m => MonadAgent (AgentExpert m) where
-  genAction _observation actionSpace = 
-    return $ head $ unActionSpace actionSpace
-
 -------------------------------------------------------------------------------
 -- env
 -------------------------------------------------------------------------------
@@ -51,24 +37,36 @@ instance Monad m => MonadEnv (EnvCitycat m) where
   step action = return ()
 
 -------------------------------------------------------------------------------
+-- agent
+-------------------------------------------------------------------------------
+
+class MonadAgent m where
+  genAction :: m Action
+
+newtype AgentExpert m a = AgentExpert { runAgentExpert :: m a }
+  deriving (Functor, Applicative, Monad, MonadIO, MonadEnv)
+
+instance (MonadEnv m, Monad m) => MonadAgent (AgentExpert m) where
+  genAction = do
+    actionSpace <- getActionSpace
+    let actions = unActionSpace actionSpace
+    return $ head actions
+
+-------------------------------------------------------------------------------
 -- app + main
 -------------------------------------------------------------------------------
 
-app :: (MonadEnv m, MonadIO m) => m ()
--- app :: (MonadAgent m, MonadEnv m, MonadIO m) => m ()
+app :: (MonadAgent m, MonadEnv m, MonadIO m) => m ()
 app = do
-  obs <- getObservation
-  asp <- getActionSpace
-  liftIO $ print asp
-  -- liftIO $ print act
-  -- act <- genAction obs asp
-  -- step act
-  -- liftIO $ print act
+  actionSpace <- getActionSpace
+  liftIO $ print actionSpace
+  action <- genAction
+  step action
+  liftIO $ print action
 
 main :: IO ()
 main = do
   putStrLn "test"
-  runEnvCitycat app
-  
+  runEnvCitycat $ runAgentExpert app
 
 

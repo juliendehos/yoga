@@ -36,6 +36,7 @@ cabal build
   - random Stateful
   - env cartpole
   - tagless final -> monad transformer ?
+  - tagless final -> polysemy ?
 
 
 # references
