@@ -1,6 +1,8 @@
 {-# Language GeneralizedNewtypeDeriving #-}
+{-# Language FlexibleContexts #-}
 {-# Language FlexibleInstances #-}
-{-# Language MultiParamTypeClasses #-}
+{-# Language FunctionalDependencies #-}
+-- {-# Language MultiParamTypeClasses #-}
 
 import Control.Monad.IO.Class
 -- import Control.Monad.Random.Class
@@ -17,15 +19,18 @@ data Action = ALeft | AFront | ARight
   deriving Show
 
 data Citycat = Citycat
-  { _cActionSpace :: ActionSpace
-  , _cLastAction :: Maybe Action
+  { _cLastAction :: Maybe Action
+  , _cSteps :: Int
   } deriving Show
 
 mkCitycat :: Citycat
-mkCitycat = Citycat (ActionSpace [ALeft, AFront, ARight]) Nothing
+mkCitycat = Citycat Nothing 0
 
 stepCitycat :: Action -> Citycat -> Citycat
-stepCitycat action citycat = citycat { _cLastAction = Just action }
+stepCitycat action citycat = citycat 
+  { _cLastAction = Just action
+  , _cSteps = 1 + _cSteps citycat
+  }
 
 getActionSpaceCitycat :: ActionSpace
 getActionSpaceCitycat = ActionSpace [ALeft, AFront, ARight]
@@ -34,14 +39,14 @@ getActionSpaceCitycat = ActionSpace [ALeft, AFront, ARight]
 -- env
 -------------------------------------------------------------------------------
 
-class MonadEnv env m where
-  getActionSpace :: env -> m ActionSpace
-  step :: Action -> env -> m env
+class MonadEnv env actionSpace action m | env -> actionSpace action where
+  getActionSpace :: env -> m actionSpace
+  step :: action -> env -> m env
 
 newtype EnvCitycat m a = EnvCitycat { runEnvCitycat :: m a }
   deriving (Functor, Applicative, Monad, MonadST, MonadIO)
 
-instance Monad m => MonadEnv Citycat (EnvCitycat m) where
+instance Monad m => MonadEnv Citycat ActionSpace Action (EnvCitycat m) where
   getActionSpace _env = return getActionSpaceCitycat
 
   step action env = return $ stepCitycat action env
@@ -50,9 +55,8 @@ instance Monad m => MonadEnv Citycat (EnvCitycat m) where
 -- agent
 -------------------------------------------------------------------------------
 
--- TODO env -> observation
-class MonadAgent env agent m where
-  genAction :: env -> agent -> m (Action, agent)
+class MonadAgent actionSpace action agent m where
+  genAction :: actionSpace -> agent -> m (action, agent)
 
 newtype Expert = Expert
   { _eIndex :: Int
@@ -62,28 +66,36 @@ mkExpert :: Expert
 mkExpert = Expert 0
 
 newtype AgentExpert m a = AgentExpert { runAgentExpert :: m a }
-  deriving (Functor, Applicative, Monad, MonadIO, MonadEnv env)
+  deriving (Functor, Applicative, Monad, MonadIO, MonadEnv env actionSpace action)
 
-instance (MonadEnv env m, Monad m) => MonadAgent env Expert (AgentExpert m) where
-  genAction env0 agent0 = do
-    actions <- unActionSpace <$> getActionSpace env0
-    let i1 = _eIndex agent0 + 1
-        i2 = if i1 < length actions then i1 else 0
-        action = actions !! i2
-        agent1 = agent0 { _eIndex = i2 }
-    return (action, agent1)
+instance (MonadEnv Citycat ActionSpace Action m, Monad m) 
+  => MonadAgent ActionSpace Action Expert (AgentExpert m) 
+  where
+
+    genAction space0 agent0 = 
+      let actions = unActionSpace space0
+          i1 = _eIndex agent0 + 1
+          i2 = if i1 < length actions then i1 else 0
+          action = actions !! i2
+          agent1 = agent0 { _eIndex = i2 }
+      in return (action, agent1)
 
 -------------------------------------------------------------------------------
 -- app + main
 -------------------------------------------------------------------------------
 
-app :: (MonadAgent env agent m, MonadEnv env m, MonadIO m) => env -> agent -> m (env, agent)
+app 
+  :: (MonadAgent space action agent m, MonadEnv env space action m, MonadIO m, Show action)
+  => env -> agent -> m (env, agent)
 app env0 agent0 = do
-  -- TODO actionSpace <- getActionSpace env0
-  (action, agent1) <- genAction env0 agent0
-  env1 <- step action env0
-  liftIO $ print action
-  return (env1, agent1)
+  space0 <- getActionSpace env0
+  (action1, agent1) <- genAction space0 agent0
+  env1 <- step action1 env0
+  space1 <- getActionSpace env1
+  (action2, agent2) <- genAction space1 agent1
+  env2 <- step action2 env1
+  liftIO $ print action2
+  return (env2, agent2)
 
 main :: IO ()
 main = do
