@@ -2,17 +2,22 @@
 
 import System.Random.MWC as MWC
 -- import System.Random
--- import System.Random.Stateful
+import System.Random.Stateful
 
 import Control.Monad.ST
 
 mkGen :: IO (Gen RealWorld)
 mkGen = MWC.createSystemRandom
 
+randMul2 :: StatefulGen g m => g -> m Int
+randMul2 gen = (*2) <$> uniformRM (1, 100) gen
+
 main :: IO ()
 main = do
   x1 <- withSystemRandomST $ \(gen::GenST s) -> do
-    uniformRM (1, 100::Int) gen :: ST s Int
+    y1 <- uniformRM (1, 100::Int) gen :: ST s Int
+    y2 <- randMul2 gen
+    return (y1 + y2)
   print x1
   gen2 <- mkGen
   x2 <- uniformRM (1, 100::Int) gen2

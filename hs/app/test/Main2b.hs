@@ -10,6 +10,9 @@
 
 import Control.Monad.IO.Class
 
+import Control.Monad.ST
+import Control.Monad.ST.Class
+
 import System.Random.MWC as MWC
 import System.Random
 import System.Random.Stateful
@@ -98,11 +101,14 @@ newtype RandomType g = RandomType
   { _gen :: g
   } deriving Show
 
-mkRandom :: (StatefulGen g m) => m (RandomType g)
-mkRandom = RandomType <$> MWC.create
+-- mkRandom :: (StatefulGen g m, MonadST m) => m (RandomType g)
+-- mkRandom = RandomType <$> MWC.create
+
+mkRandom2 :: IO (RandomType (Gen RealWorld))
+mkRandom2 = RandomType <$> MWC.createSystemRandom
 
 newtype AgentRandom m a = AgentRandom { runAgentRandom :: m a }
-  deriving (Functor, Applicative, Monad, MonadIO, MonadEnv env space action)
+  deriving (Functor, Applicative, Monad, MonadIO, MonadEnv env space action, StatefulGen g)
 
 instance (MonadEnv Citycat SpaceCitycat ActionCitycat m, StatefulGen g m)
   => MonadAgent SpaceCitycat ActionCitycat (RandomType g) (AgentRandom m) 
@@ -134,10 +140,14 @@ app env0 agent0 = do
 
 main :: IO ()
 main = do
-  putStrLn "test"
+
   let env0 = mkCitycat
       agent0 = mkExpert
   (env1, agent1) <- runEnvCitycat $ runAgentExpert $ app env0 agent0
   print env1
   print agent1
+
+  agent2 <- mkRandom2
+
+  putStrLn "test"
 
