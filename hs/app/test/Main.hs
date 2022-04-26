@@ -11,9 +11,12 @@ mkGen = MWC.createSystemRandom
 
 main :: IO ()
 main = do
-  x <- withSystemRandomST $ \(gen::GenST s) -> do
+  x1 <- withSystemRandomST $ \(gen::GenST s) -> do
     uniformRM (1, 100::Int) gen :: ST s Int
-  print x
+  print x1
+  gen2 <- mkGen
+  x2 <- uniformRM (1, 100::Int) gen2
+  print x2
 
 
 {-
